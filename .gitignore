@@ -1,0 +1,40 @@
+# Java / Maven
+backend/target/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+*.class
+*.jar
+*.war
+*.ear
+
+# Node.js / NPM
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/coverage/
+package-lock.json
+yarn.lock
+
+# Docker
+docker-compose.override.yml
+postgres-data/
+minio-data/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Environment
+.env
+.env.local
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
