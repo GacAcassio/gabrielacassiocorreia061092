@@ -248,7 +248,7 @@ docker-compose up --build
 - [x] Implementar renovação de token
 - [x] Criar endpoint POST /api/v1/auth/login
 - [x] Criar endpoint POST /api/v1/auth/refresh
-- [] Documentar autenticação no Swagger
+- [x] Documentar autenticação no Swagger
 
 **Rate Limiting**
 
