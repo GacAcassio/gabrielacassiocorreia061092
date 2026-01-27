@@ -41,7 +41,7 @@ Sistema full stack para gerenciamento de artistas musicais e seus álbuns.
 
 ### Executar
 ```bash
-docker-compose up --build
+sudo docker-compose up --build
 ```
 
 ### Acessar
@@ -134,6 +134,7 @@ docker-compose up --build
 
 ##  Arquitetura da Autenticação 
 
+```
 ┌─────────────┐
 │   Client    │
 └──────┬──────┘
@@ -171,6 +172,7 @@ docker-compose up --build
 ┌─────────────────────┐
 │ ArtistController    │ Processa requisição
 └─────────────────────┘
+```
 
 ---
 
