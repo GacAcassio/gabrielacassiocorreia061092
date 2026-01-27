@@ -130,6 +130,49 @@ docker-compose up --build
 │ updated_at          │
 └─────────────────────┘
 ```
+---
+
+##  Arquitetura da Autenticação 
+
+┌─────────────┐
+│   Client    │
+└──────┬──────┘
+       │ 1. POST /auth/login {username, password}
+       ▼
+┌─────────────────────┐
+│  AuthController     │
+└──────┬──────────────┘
+       │ 2. Valida credenciais
+       ▼
+┌─────────────────────┐
+│  AuthService        │
+│  - UserDetailsService│
+│  - BCrypt           │
+└──────┬──────────────┘
+       │ 3. Gera JWT
+       ▼
+┌─────────────────────┐
+│  JwtTokenProvider   │
+│  - Secret key       │
+│  - Expiration: 5min │
+└──────┬──────────────┘
+       │ 4. Retorna token
+       ▼
+┌─────────────┐
+│   Client    │ Armazena token
+└──────┬──────┘
+       │ 5. GET /artists (Authorization: Bearer <token>)
+       ▼
+┌─────────────────────┐
+│ JwtAuthFilter       │ Valida token
+└──────┬──────────────┘
+       │ 6. Token válido?
+       ▼
+┌─────────────────────┐
+│ ArtistController    │ Processa requisição
+└─────────────────────┘
+
+---
 
 ### Decisões de Modelagem
 
@@ -171,21 +214,45 @@ docker-compose up --build
 - [x] Testar docker-compose
 - [x] Fazer primeiro commit
 
-### Sprint 1 - Backend ✅
-- [x] Docker e Banco de Dados
-- [ ] Criar docker-compose.yml com serviços: PostgreSQL, MinIO, API, Frontend
+### Sprint 1 - Backend 
+
+**Docker e Banco de Dados**
+- [x] Criar docker-compose.yml com serviços: PostgreSQL, MinIO, API, Frontend
 - [x] Configurar variáveis de ambiente
 - [x] Configurar PostgreSQL (porta, credenciais, volume)
-- [x]onfigurar MinIO (porta, credenciais, buckets)
-- [x] Setup Backend Spring Boot
+- [x] Configurar MinIO (porta, credenciais, buckets)
+
+**Setup Backend Spring Boot**
 - [x] Inicializar projeto Spring Boot (Spring Initializr)
 - [x] Adicionar dependências: Web, JPA, PostgreSQL, Flyway, Security, JWT, MinIO/S3, WebSocket, Validation, OpenAPI
 - [x] Configurar application.yml (datasource, MinIO, JWT)
 - [x] Criar Dockerfile para API
 - [x] Configurar CORS restrito ao domínio do frontend
-- [x] Modelagem e Migrations
+
+**Modelagem e Migrations**
 - [x] Criar modelo de dados (Artist, Album, User, Regional)
 - [x] Criar migration V1 - Tabelas User e Artist
-- [x]  Criar migration V2 - Tabela Album com FK para Artist
-- [x]  Criar migration V3 - Tabela Regional (id, nome, ativo)
-- [x]  Criar migration V4 - Popular dados de exemplo
+- [x] Criar migration V2 - Tabela Album com FK para Artist
+- [x] Criar migration V3 - Tabela Regional (id, nome, ativo)
+- [x] Criar migration V4 - Popular dados de exemplo
+
+
+### Sprint 2 - Autenticação e Segurança
+
+**Sistema de Autenticação**
+
+- [x] Entidade User 
+- [x] Implementar UserDetailsService
+- [x] Configurar Spring Security
+- [x] Implementar geração de JWT (expiração 5 min)
+- [x] Implementar renovação de token
+- [x] Criar endpoint POST /api/v1/auth/login
+- [x] Criar endpoint POST /api/v1/auth/refresh
+- [] Documentar autenticação no Swagger
+
+**Rate Limiting**
+
+- [x] Implementar interceptor/filter para rate limit
+- [x] Configurar limite: 10 requisições/minuto por usuário
+- [x] Retornar HTTP 429 quando exceder limite
+- [x] Adicionar headers de rate limit na resposta
