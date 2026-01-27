@@ -65,5 +65,5 @@ docker-compose up --build
 ## ✅ Status do Projeto
 
 ### Sprint 0 - Setup ✅
-- [Sprint 0](./sprint0.md)
+- [Sprint 0](./SPRINT_0.md)
 
