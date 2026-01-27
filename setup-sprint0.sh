@@ -7,7 +7,7 @@
 set -e  # Parar em caso de erro
 
 echo "======================================"
-echo "🚀 INICIANDO SETUP
+echo "INICIANDO SETUP
 echo "======================================"
 echo ""
 
