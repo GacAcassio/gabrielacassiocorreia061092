@@ -132,7 +132,7 @@ sudo docker-compose up --build
 ```
 ---
 
-##  Arquitetura da Autenticação 
+##  🪪 Arquitetura da Autenticação 
 
 ```
 ┌─────────────┐
@@ -212,11 +212,11 @@ sudo docker-compose up --build
 - [x] Criar docker-compose.yml
 - [x] Criar .env.example
 - [x] Preencher dados no README.md
-- [ ] Criar documentação 
+- [x] Criar documentação 
 - [x] Testar docker-compose
 - [x] Fazer primeiro commit
 
-### Sprint 1 - Backend 
+### Sprint 1 - Backend ✅
 
 **Docker e Banco de Dados**
 - [x] Criar docker-compose.yml com serviços: PostgreSQL, MinIO, API, Frontend
@@ -239,7 +239,7 @@ sudo docker-compose up --build
 - [x] Criar migration V4 - Popular dados de exemplo
 
 
-### Sprint 2 - Autenticação e Segurança
+### Sprint 2 - Autenticação e Segurança ✅
 
 **Sistema de Autenticação**
 
