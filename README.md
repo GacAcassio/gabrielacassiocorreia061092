@@ -515,10 +515,10 @@ public class Album {
 
 ---
 
-### Sprint 4 - CRUD de Álbuns e Upload de Imagens ☐
+### Sprint 4 - CRUD de Álbuns e Upload de Imagens 
 
 **Entidades e Repositórios**
-- [x] Criar entidade Album (relacionamento ManyToOne com Artist)
+- [x] Criar entidade Album (relacionamento ManyToMany com Artist)
 - [x] Criar AlbumRepository com paginação
 
 **Integração com MinIO**
@@ -603,7 +603,7 @@ public class Album {
 - [ ] Implementar renovação automática de token
 - [ ] Criar interceptor para adicionar token 
 
-### Sprint 9 - Telas de Autenticação ☐
+### Sprint 9 - Telas de Autenticação 
 
 **Login**
 - [ ] Criar componente de Login
