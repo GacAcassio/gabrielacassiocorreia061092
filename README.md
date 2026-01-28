@@ -221,8 +221,6 @@ sudo docker-compose up --build
 - `idx_albums_title` em `title`
 - `idx_albums_cover_urls` em `cover_urls` (GIN index)
 
-**⚠️ Nota:** A coluna `artist_id` foi **REMOVIDA** na Migration V7
-
 ---
 
 ### 4. Tabela `artist_album` (Junction Table) 🆕
