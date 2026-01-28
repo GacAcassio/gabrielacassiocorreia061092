@@ -449,6 +449,8 @@ public class Album {
 - [x] Testar docker-compose
 - [x] Fazer primeiro commit
 
+---
+
 ### Sprint 1 - Backend ✅
 
 **Docker e Banco de Dados**
@@ -471,11 +473,11 @@ public class Album {
 - [x] Criar migration V3 - Tabela Regional (id, nome, ativo)
 - [x] Criar migration V4 - Popular dados de exemplo
 
+---
 
 ### Sprint 2 - Autenticação e Segurança ✅
 
 **Sistema de Autenticação**
-
 - [x] Entidade User 
 - [x] Implementar UserDetailsService
 - [x] Configurar Spring Security
@@ -486,8 +488,243 @@ public class Album {
 - [x] Documentar autenticação no Swagger
 
 **Rate Limiting**
-
 - [x] Implementar interceptor/filter para rate limit
 - [x] Configurar limite: 10 requisições/minuto por usuário
 - [x] Retornar HTTP 429 quando exceder limite
 - [x] Adicionar headers de rate limit na resposta
+
+---
+
+### Sprint 3 - CRUD de Artistas  ✅
+
+**Entidades e Repositórios**
+- [x] Criar entidade Artist  
+- [x] Criar ArtistRepository com métodos customizados  
+- [x] Implementar paginação e ordenação  
+
+**Serviços e Controllers**
+- [x] Criar ArtistService  
+- [x] Implementar POST /api/v1/artists - criar artista  
+- [x] Implementar GET /api/v1/artists - listar com paginação e ordenação  
+- [x] Implementar GET /api/v1/artists/{id} - buscar por ID  
+- [x] Implementar PUT /api/v1/artists/{id} - atualizar artista  
+- [x] Implementar busca por nome com ordenação (asc/desc)  
+- [x] Adicionar validações (Bean Validation)  
+
+**Documentação**
+- [ ] Documentar endpoints no Swagger/OpenAPI  
+- [ ] Adicionar exemplos de request/response  
+
+---
+
+### Sprint 4 - CRUD de Álbuns e Upload de Imagens ☐
+
+**Entidades e Repositórios**
+- [x] Criar entidade Album (relacionamento ManyToOne com Artist)
+- [x] Criar AlbumRepository com paginação
+
+**Integração com MinIO**
+- [ ] Configurar cliente MinIO/S3
+- [ ] Criar serviço para upload de imagens
+- [ ] Implementar geração de presigned URLs (30 min expiração)
+- [ ] Criar bucket
+
+**Endpoints de Álbuns**
+- [ ] Implementar POST /api/v1/albums - criar álbum
+- [ ] Implementar POST /api/v1/albums/{id}/covers - upload múltiplas capas
+- [ ] Implementar GET /api/v1/albums - listar com paginação
+- [ ] Implementar GET /api/v1/albums/{id} - buscar por ID
+- [ ] Implementar PUT /api/v1/albums/{id} - atualizar álbum
+- [ ] Implementar GET /api/v1/artists/{id}/albums - álbuns de um artista
+- [ ] Retornar presigned URLs nas respostas
+
+---
+
+### Sprint 5 - WebSocket e Notificações 
+
+**Configuração WebSocket**
+- [ ] Adicionar dependência spring-boot-starter-websocket
+- [ ] Configurar WebSocket broker (STOMP)
+- [ ] Criar endpoint WebSocket /ws
+
+**Notificações**
+- [ ] Criar serviço de notificações
+- [ ] Emitir evento ao cadastrar novo álbum
+- [ ] Enviar notificação via WebSocket para clientes conectados
+- [ ] Documentar protocolo WebSocket no README
+
+---
+
+### Sprint 6 - Sincronização de Regionais (Requisito Sênior) 
+
+**Implementação da Sincronização**
+- [x] Criar entidade Regional (id, nome, ativo)
+- [x] Criar RegionalRepository
+- [ ] Implementar client HTTP para consumir API externa
+- [ ] Criar serviço de sincronização com algoritmo eficiente:
+  - [ ] Buscar regionais da API externa
+  - [ ] Buscar regionais locais ativas
+  - [ ] Comparar e identificar: novos, removidos, alterados
+  - [ ] Inserir novos, inativar removidos, inativar e criar novos para alterados
+- [ ] Criar endpoint GET /api/v1/regionais/sync para trigger manual
+- [ ] Implementar scheduled job (opcional: sync automático)
+- [ ] Documentar complexidade algorítmica no README
+
+---
+
+### Sprint 7 - Health Checks e Testes Backend 
+
+**Health Checks**
+- [ ] Implementar endpoint /actuator/health
+- [ ] Configurar liveness probe
+- [ ] Configurar readiness probe
+- [ ] Incluir health checks do PostgreSQL e MinIO
+
+**Testes Unitários**
+- [ ] Testes unitários para ArtistService
+- [ ] Testes unitários para AlbumService
+- [ ] Testes unitários para AuthService
+- [ ] Testes unitários para RegionalSyncService
+- [ ] Testes de controllers (MockMvc)
+- [ ] Cobertura mínima de 70%
+
+---
+
+### Sprint 8 - Frontend Base (React/Angular) 
+
+**Setup Frontend**
+- [ ] Inicializar projeto (Create React App + TypeScript ou Angular CLI)
+- [ ] Configurar Tailwind CSS
+- [ ] Configurar estrutura de pastas (components, services, pages, models)
+- [ ] Criar Dockerfile para frontend
+- [ ] Configurar variáveis de ambiente
+
+**Serviços Base**
+- [ ] Criar HttpClient service com interceptors
+- [x] Criar AuthService com gestão de token JWT
+- [ ] Implementar renovação automática de token
+- [ ] Criar interceptor para adicionar token 
+
+### Sprint 9 - Telas de Autenticação ☐
+
+**Login**
+- [ ] Criar componente de Login
+- [ ] Formulário com validação (email/username, senha)
+- [ ] Integrar com AuthService
+- [ ] Redirecionar após login bem-sucedido
+- [ ] Exibir mensagens de erro
+- [ ] Layout responsivo
+
+**Guards e Rotas**
+- [ ] Criar AuthGuard para proteger rotas
+- [ ] Configurar rotas públicas e privadas
+- [ ] Implementar Lazy Loading para módulos
+
+---
+
+### Sprint 10 - Listagem de Artistas 
+
+**Componentes**
+- [ ] Criar página de listagem de artistas
+- [ ] Criar componente de card/tabela de artista
+- [ ] Exibir nome e número de álbuns
+- [ ] Layout responsivo (grid/flexbox)
+
+**Funcionalidades**
+- [ ] Implementar campo de busca por nome
+- [ ] Implementar ordenação (asc/desc)
+- [ ] Implementar paginação ou scroll infinito
+- [ ] Integrar com ArtistService
+- [ ] Loading states e error handling
+
+---
+
+### Sprint 11 - Detalhamento e Cadastro 
+
+**Tela de Detalhamento**
+- [ ] Criar página de detalhes do artista
+- [ ] Exibir informações completas do artista
+- [ ] Listar álbuns associados com capas
+- [ ] Exibir presigned URLs das imagens
+- [ ] Mensagem quando não houver álbuns
+
+**Formulários**
+- [ ] Criar formulário de cadastro/edição de artista
+- [ ] Validações de formulário (ReactHookForm ou Angular Forms)
+- [ ] Criar formulário de cadastro/edição de álbum
+- [ ] Implementar upload de múltiplas imagens
+- [ ] Preview de imagens antes do upload
+- [ ] Feedback de sucesso/erro
+
+---
+
+### Sprint 12 - WebSocket Frontend e Notificações 
+
+**Integração WebSocket**
+- [ ] Adicionar biblioteca WebSocket (SockJS, Stomp)
+- [ ] Criar serviço WebSocket
+- [ ] Conectar ao endpoint /ws
+- [ ] Escutar eventos de novos álbuns
+
+**Sistema de Notificações**
+- [ ] Criar componente de notificação (toast/snackbar)
+- [ ] Exibir notificação ao receber evento de novo álbum
+- [ ] Auto-dismiss após alguns segundos
+- [ ] Permitir navegação ao álbum notificado
+
+---
+
+### Sprint 13 - Testes Frontend 
+
+**Testes Unitários**
+- [ ] Testes de componentes (Jest + Testing Library ou Jasmine/Karma)
+- [ ] Testes de services
+- [ ] Testes de guards e interceptors
+- [ ] Cobertura mínima de 60%
+
+---
+
+### Sprint 14 - Documentação e Finalização 
+
+**README.md Completo**
+- [x] Dados de inscrição e vaga
+- [x] Descrição da arquitetura
+- [x] Diagrama ER do banco de dados
+- [ ] Decisões técnicas e justificativas
+- [ ] Complexidade algorítmica da sincronização
+- [ ] Instruções de execução (docker-compose up)
+- [ ] Instruções para executar testes
+- [x] Credenciais padrão para acesso
+- [ ] Lista de endpoints da API
+- [x] Tecnologias utilizadas
+- [ ] O que foi implementado
+- [ ] O que não foi implementado (se houver) e por quê
+
+**Refinamentos Finais**
+- [ ] Revisar código (Clean Code)
+- [ ] Remover código comentado e console.logs
+- [ ] Verificar todos os requisitos atendidos
+- [ ] Testar docker-compose completo
+- [ ] Verificar logs de saúde dos containers
+- [ ] Testar fluxo completo end-to-end
+- [ ] Revisar histórico de commits (mensagens claras e commits pequenos)
+
+**Checklist Final**
+- [ ] Docker-compose funcional (BD + MinIO + API + Frontend)
+- [ ] Autenticação JWT (5 min + renovação)
+- [ ] CORS configurado
+- [ ] Endpoints versionados
+- [ ] Swagger/OpenAPI documentado
+- [ ] Flyway migrations
+- [ ] Upload no MinIO com presigned URLs
+- [ ] Paginação
+- [ ] WebSocket funcionando
+- [ ] Rate limiting (10 req/min)
+- [ ] Health checks
+- [ ] Testes unitários
+- [ ] Sincronização de regionais
+- [ ] Frontend com TypeScript
+- [ ] Tailwind CSS
+- [ ] Lazy Loading
+- [ ] Padrão Facade
+- [ ] BehaviorSubject
