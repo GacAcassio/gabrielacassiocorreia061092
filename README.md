@@ -79,59 +79,6 @@ sudo docker-compose up --build
 
 ---
 
-## 🗄️ Modelagem de Dados
-
-### Diagrama ER
-
-```
-┌─────────────────────┐
-│       USER          │
-├─────────────────────┤
-│ id (PK)             │
-│ username (UNIQUE)   │
-│ password            │
-│ email (UNIQUE)      │
-│ created_at          │
-└─────────────────────┘
-
-┌─────────────────────┐
-│      ARTIST         │
-├─────────────────────┤
-│ id (PK)             │
-│ name (NOT NULL)     │
-│ bio                 │
-│ created_at          │
-│ updated_at          │
-└─────────────────────┘
-         │
-         │ 1
-         │
-         │ N
-         ▼
-┌─────────────────────┐
-│       ALBUM         │
-├─────────────────────┤
-│ id (PK)             │
-│ title (NOT NULL)    │
-│ artist_id (FK)      │
-│ release_year        │
-│ cover_urls (JSON)   │
-│ created_at          │
-│ updated_at          │
-└─────────────────────┘
-
-┌─────────────────────┐
-│     REGIONAL        │
-├─────────────────────┤
-│ id (PK)             │
-│ nome (NOT NULL)     │
-│ ativo (DEFAULT true)│
-│ created_at          │
-│ updated_at          │
-└─────────────────────┘
-```
----
-
 ##  🪪 Arquitetura da Autenticação 
 
 ```
@@ -174,32 +121,318 @@ sudo docker-compose up --build
 └─────────────────────┘
 ```
 
+# 🗄️ Modelagem de Dados - Atualizada (N:N)
+
+## Diagrama ER - Versão Atualizada
+
+```
+┌─────────────────────┐
+│       USER          │
+├─────────────────────┤
+│ id (PK)             │
+│ username (UNIQUE)   │
+│ password            │
+│ email (UNIQUE)      │
+│ created_at          │
+│ updated_at          │
+└─────────────────────┘
+
+┌─────────────────────┐              ┌─────────────────────┐
+│      ARTIST         │              │   ARTIST_ALBUM      │
+├─────────────────────┤              ├─────────────────────┤
+│ id (PK)             │◄────────────┤│ artist_id (FK, PK)  │
+│ name (NOT NULL)     │      N      ││ album_id (FK, PK)   │
+│ bio                 │              │└─────────────────────┘
+│ created_at          │                        │
+│ updated_at          │                        │ N
+└─────────────────────┘                        │
+                                                ▼
+                                    ┌─────────────────────┐
+                                    │       ALBUM         │
+                                    ├─────────────────────┤
+                                    │ id (PK)             │
+                                    │ title (NOT NULL)    │
+                                    │ release_year        │
+                                    │ cover_urls (JSONB)  │
+                                    │ created_at          │
+                                    │ updated_at          │
+                                    └─────────────────────┘
+
+┌─────────────────────┐
+│     REGIONAL        │
+├─────────────────────┤
+│ id (PK)             │
+│ nome (NOT NULL)     │
+│ ativo (DEFAULT true)│
+│ created_at          │
+│ updated_at          │
+└─────────────────────┘
+```
+
 ---
 
-### Decisões de Modelagem
+## 📊 Estrutura Detalhada das Tabelas
 
-#### 1. **Tabela USER**
-- Armazena credenciais de autenticação
-- Username e email únicos para login
-- Password com hash BCrypt
-- Timestamp de criação para auditoria
+### 1. Tabela `users`
 
-#### 2. **Tabela ARTIST**
-- Armazena informações dos artistas/bandas
-- Campo `bio` opcional para descrição
-- Timestamps para rastreamento de mudanças
-- Índice em `name` para otimizar buscas
+| Coluna | Tipo | Constraints | Descrição |
+|--------|------|------------|-----------|
+| id | BIGSERIAL | PRIMARY KEY | Identificador único |
+| username | VARCHAR(50) | NOT NULL, UNIQUE | Nome de usuário para login |
+| email | VARCHAR(100) | NOT NULL, UNIQUE | Email do usuário |
+| password | VARCHAR(255) | NOT NULL | Hash BCrypt da senha |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Data de criação |
+| updated_at | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Data de atualização |
 
-#### 3. **Tabela ALBUM**
-- Relacionamento N:1 com ARTIST (um artista pode ter vários álbuns)
-- `cover_urls` armazena array JSON com URLs das capas (presigned URLs do MinIO)
-- `release_year` opcional (pode ser adicionado posteriormente)
-- Índice em `artist_id` para consultas eficientes
+**Índices:**
+- `idx_users_username` em `username`
+- `idx_users_email` em `email`
 
-#### 4. **Tabela REGIONAL**
-- Estrutura simples conforme especificação
-- Campo `ativo` para soft delete (mantém histórico)
-- Timestamps para rastreamento de sincronizações
+---
+
+### 2. Tabela `artists`
+
+| Coluna | Tipo | Constraints | Descrição |
+|--------|------|------------|-----------|
+| id | BIGSERIAL | PRIMARY KEY | Identificador único |
+| name | VARCHAR(200) | NOT NULL | Nome do artista ou banda |
+| bio | TEXT | NULL | Biografia/descrição (opcional) |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Data de cadastro |
+| updated_at | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Data de atualização |
+
+**Índices:**
+- `idx_artists_name` em `name`
+- `idx_artists_created_at` em `created_at`
+
+---
+
+### 3. Tabela `albums`
+
+| Coluna | Tipo | Constraints | Descrição |
+|--------|------|------------|-----------|
+| id | BIGSERIAL | PRIMARY KEY | Identificador único |
+| title | VARCHAR(200) | NOT NULL | Título do álbum |
+| release_year | INTEGER | NULL | Ano de lançamento (opcional) |
+| cover_urls | JSONB | DEFAULT '[]'::jsonb | Array de URLs das capas (MinIO) |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Data de cadastro |
+| updated_at | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Data de atualização |
+
+**Índices:**
+- `idx_albums_title` em `title`
+- `idx_albums_cover_urls` em `cover_urls` (GIN index)
+
+**⚠️ Nota:** A coluna `artist_id` foi **REMOVIDA** na Migration V7
+
+---
+
+### 4. Tabela `artist_album` (Junction Table) 🆕
+
+| Coluna | Tipo | Constraints | Descrição |
+|--------|------|------------|-----------|
+| artist_id | BIGINT | NOT NULL, FK → artists(id) | ID do artista |
+| album_id | BIGINT | NOT NULL, FK → albums(id) | ID do álbum |
+| - | - | PRIMARY KEY (artist_id, album_id) | Chave composta |
+
+**Foreign Keys:**
+- `fk_artist_album_artist`: `artist_id` → `artists(id)` ON DELETE CASCADE
+- `fk_artist_album_album`: `album_id` → `albums(id)` ON DELETE CASCADE
+
+**Índices:**
+- `idx_artist_album_artist_id` em `artist_id`
+- `idx_artist_album_album_id` em `album_id`
+
+**Exemplo de dados:**
+```sql
+-- Serj Tankian - álbuns solo
+INSERT INTO artist_album VALUES (1, 1);  -- Harakiri
+INSERT INTO artist_album VALUES (1, 2);  -- Black Blooms
+
+-- Fort Minor (Mike Shinoda + colaboradores)
+INSERT INTO artist_album VALUES (2, 4);  -- The Rising Tied
+INSERT INTO artist_album VALUES (5, 4);  -- Artista convidado X
+```
+
+---
+
+### 5. Tabela `regional`
+
+| Coluna | Tipo | Constraints | Descrição |
+|--------|------|------------|-----------|
+| id | INTEGER | PRIMARY KEY | ID da regional (vem da API externa) |
+| nome | VARCHAR(200) | NOT NULL | Nome da regional |
+| ativo | BOOLEAN | NOT NULL, DEFAULT true | Status ativo/inativo (soft delete) |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Data de criação |
+| updated_at | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Data de sincronização |
+
+**Índices:**
+- `idx_regional_ativo` em `ativo`
+- `idx_regional_nome` em `nome`
+
+---
+
+## 🎯 Decisões de Modelagem
+
+### 1. **Tabela USER**
+- **Propósito:** Autenticação JWT
+- **Username e Email únicos:** Permite login por ambos
+- **Password BCrypt:** Hash com salt (mínimo 10 rounds)
+- **Timestamps:** Auditoria de criação e modificação
+- **Sem roles por enquanto:** Sistema simples, todos têm mesmas permissões
+
+---
+
+### 2. **Tabela ARTIST**
+- **Propósito:** Armazenar artistas/bandas individuais
+- **Campo `bio`:** Opcional, permite descrições longas (TEXT)
+- **Índice em `name`:** Otimiza buscas alfabéticas e filtros
+- **Relacionamento N:N:** Permite colaborações entre artistas
+
+---
+
+### 3. **Tabela ALBUM**
+- **Propósito:** Armazenar álbuns musicais
+- **Relacionamento N:N com Artist:**
+  - ✅ Permite colaborações (feat., bandas temporárias)
+  - ✅ Exemplo: "The Rising Tied" - Fort Minor (Mike Shinoda + convidados)
+  - ✅ Álbuns ao vivo com múltiplos artistas
+- **`cover_urls` JSONB:**
+  - Armazena array de URLs: `["url1.jpg", "url2.jpg"]`
+  - Permite múltiplas capas (versões diferentes)
+  - Índice GIN permite buscar dentro do JSON
+- **`release_year` opcional:**
+  - Nem todos os álbuns têm ano definido
+  - Facilita ordenação cronológica
+- **Sem `artist_id`:**
+  - Foi **removido** na Migration V7
+  - Relacionamento agora é via tabela `artist_album`
+
+---
+
+### 4. **Tabela ARTIST_ALBUM (Junction Table)**
+- **Propósito:** Implementar relacionamento N:N
+- **Chave composta:** `(artist_id, album_id)` garante unicidade
+- **ON DELETE CASCADE:**
+  - Deletar artista → remove relacionamentos
+  - Deletar álbum → remove relacionamentos
+  - Não deixa registros órfãos
+- **Índices bidirecionais:**
+  - Buscar álbuns de um artista: rápido
+  - Buscar artistas de um álbum: rápido
+- **Sem campos extras:**
+  - Tabela pura de relacionamento
+  - Futuramente pode adicionar: `order`, `role` (ex: "vocalista", "produtor")
+
+---
+
+### 5. **Tabela REGIONAL**
+- **Propósito:** Sincronização com API externa
+- **ID não auto-increment:**
+  - Vem da API externa
+  - Tipo INTEGER (conforme especificação)
+- **Campo `ativo` (Soft Delete):**
+  - ✅ Mantém histórico
+  - ✅ Permite auditoria
+  - ✅ Facilita rollback
+  - ❌ Não usa DELETE físico
+- **Sincronização:**
+  - Novo na API → INSERT
+  - Removido da API → UPDATE ativo=false
+  - Nome alterado → UPDATE ativo=false (antigo) + INSERT (novo)
+
+---
+
+## 🔍 Queries Úteis
+
+### Buscar álbuns de um artista:
+```sql
+SELECT a.* 
+FROM albums a
+JOIN artist_album aa ON a.id = aa.album_id
+WHERE aa.artist_id = 1;
+```
+
+### Buscar artistas de um álbum:
+```sql
+SELECT ar.* 
+FROM artists ar
+JOIN artist_album aa ON ar.id = aa.artist_id
+WHERE aa.album_id = 1;
+```
+
+### Buscar álbuns com múltiplos artistas (colaborações):
+```sql
+SELECT a.id, a.title, COUNT(aa.artist_id) as num_artists
+FROM albums a
+JOIN artist_album aa ON a.id = aa.album_id
+GROUP BY a.id, a.title
+HAVING COUNT(aa.artist_id) > 1;
+```
+
+### Buscar artistas mais produtivos:
+```sql
+SELECT ar.name, COUNT(aa.album_id) as num_albums
+FROM artists ar
+JOIN artist_album aa ON ar.id = aa.artist_id
+GROUP BY ar.id, ar.name
+ORDER BY num_albums DESC;
+```
+
+---
+
+## 📝 Migrations Aplicadas
+
+| Versão | Arquivo | Descrição |
+|--------|---------|-----------|
+| V1 | `create_user_table.sql` | Tabela de usuários |
+| V2 | `create_artist_table.sql` | Tabela de artistas |
+| V3 | `create_album_table.sql` | Tabela de álbuns (com `artist_id`) |
+| V4 | `create_regional_table.sql` | Tabela de regionais |
+| V5 | `insert_default_user.sql` | Usuário padrão (admin/admin123) |
+| V6 | `insert_sample_data.sql` | Dados de exemplo |
+| **V7** | `change_album_artist_to_many_to_many.sql` | **N:N entre Album-Artist** 🆕 |
+
+---
+
+## 🎨 Mapeamento JPA (Java)
+
+### Artist.java
+```java
+@Entity
+@Table(name = "artists")
+public class Artist {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String name;
+    private String bio;
+    
+    @ManyToMany(mappedBy = "artists")
+    @JsonIgnore
+    private Set<Album> albums = new HashSet<>();
+}
+```
+
+### Album.java
+```java
+@Entity
+@Table(name = "albums")
+public class Album {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String title;
+    
+    @ManyToMany
+    @JoinTable(
+        name = "artist_album",
+        joinColumns = @JoinColumn(name = "album_id"),
+        inverseJoinColumns = @JoinColumn(name = "artist_id")
+    )
+    private Set<Artist> artists = new HashSet<>();
+}
+```
 
 ---
 
