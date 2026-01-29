@@ -12,6 +12,8 @@ import com.project.artists.repository.AlbumRepository;
 import com.project.artists.repository.ArtistRepository;
 import com.project.artists.service.AlbumService;
 import com.project.artists.service.MinioService;
+import com.project.artists.service.NotificationService;
+import com.project.artists.dto.notification.NotificationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +43,9 @@ public class AlbumServiceImpl implements AlbumService {
     @Autowired
     private MinioService minioService;
     
+    @Autowired
+    private NotificationService notificationService;
+    
     @Override
     public AlbumResponseDTO create(AlbumRequestDTO request) {
         // Validar e buscar artistas
@@ -54,7 +59,21 @@ public class AlbumServiceImpl implements AlbumService {
         
         Album saved = albumRepository.save(album);
         
-        return toResponseDTO(saved);
+        // Enviar notificação em tempo real
+        AlbumResponseDTO response = toResponseDTO(saved);
+        String artistNames = artists.stream()
+                .map(Artist::getName)
+                .collect(Collectors.joining(", "));
+        
+        notificationService.sendNotification(
+            NotificationType.ALBUM_CREATED,
+            "Novo Álbum Cadastrado",
+            String.format("O álbum '%s' de %s foi adicionado ao sistema.", 
+                         saved.getTitle(), artistNames),
+            response
+        );
+        
+        return response;
     }
     
     @Override
@@ -122,13 +141,24 @@ public class AlbumServiceImpl implements AlbumService {
         
         Album updated = albumRepository.save(album);
         
-        return toResponseDTO(updated);
+        // Enviar notificação de atualização
+        AlbumResponseDTO response = toResponseDTO(updated);
+        notificationService.sendNotification(
+            NotificationType.ALBUM_UPDATED,
+            "Álbum Atualizado",
+            String.format("O álbum '%s' foi atualizado.", updated.getTitle()),
+            response
+        );
+        
+        return response;
     }
     
     @Override
     public void delete(Long id) {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Album", "id", id));
+        
+        String albumTitle = album.getTitle();
         
         // Deletar capas do MinIO
         for (String objectName : album.getCoverUrls()) {
@@ -141,6 +171,13 @@ public class AlbumServiceImpl implements AlbumService {
         }
         
         albumRepository.delete(album);
+        
+        // Enviar notificação de deleção
+        notificationService.sendNotification(
+            NotificationType.ALBUM_DELETED,
+            "Álbum Removido",
+            String.format("O álbum '%s' foi removido do sistema.", albumTitle)
+        );
     }
     
     @Override
@@ -165,7 +202,17 @@ public class AlbumServiceImpl implements AlbumService {
         
         Album updated = albumRepository.save(album);
         
-        return toResponseDTO(updated);
+        // Enviar notificação de upload de capa
+        AlbumResponseDTO response = toResponseDTO(updated);
+        notificationService.sendNotification(
+            NotificationType.ALBUM_COVER_UPLOADED,
+            "Nova Capa de Álbum",
+            String.format("%d nova(s) capa(s) adicionada(s) ao álbum '%s'.", 
+                         files.size(), updated.getTitle()),
+            response
+        );
+        
+        return response;
     }
     
     @Override

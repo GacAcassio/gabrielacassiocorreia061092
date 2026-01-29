@@ -8,6 +8,8 @@ import com.project.artists.entity.Artist;
 import com.project.artists.exception.ResourceNotFoundException;
 import com.project.artists.repository.ArtistRepository;
 import com.project.artists.service.ArtistService;
+import com.project.artists.service.NotificationService;
+import com.project.artists.dto.notification.NotificationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +29,9 @@ public class ArtistServiceImpl implements ArtistService {
     @Autowired
     private ArtistRepository artistRepository;
     
+    @Autowired
+    private NotificationService notificationService;
+    
     @Override
     public ArtistResponseDTO create(ArtistRequestDTO request) {
         Artist artist = new Artist();
@@ -35,7 +40,16 @@ public class ArtistServiceImpl implements ArtistService {
         
         Artist saved = artistRepository.save(artist);
         
-        return toResponseDTO(saved);
+        // Enviar notificação de criação
+        ArtistResponseDTO response = toResponseDTO(saved);
+        notificationService.sendNotification(
+            NotificationType.ARTIST_CREATED,
+            "Novo Artista Cadastrado",
+            String.format("O artista '%s' foi adicionado ao sistema.", saved.getName()),
+            response
+        );
+        
+        return response;
     }
     
     @Override
@@ -93,7 +107,16 @@ public class ArtistServiceImpl implements ArtistService {
         
         Artist updated = artistRepository.save(artist);
         
-        return toResponseDTO(updated);
+        // Enviar notificação de atualização
+        ArtistResponseDTO response = toResponseDTO(updated);
+        notificationService.sendNotification(
+            NotificationType.ARTIST_UPDATED,
+            "Artista Atualizado",
+            String.format("O artista '%s' foi atualizado.", updated.getName()),
+            response
+        );
+        
+        return response;
     }
     
     @Override
@@ -101,7 +124,16 @@ public class ArtistServiceImpl implements ArtistService {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Artist", "id", id));
         
+        String artistName = artist.getName();
+        
         artistRepository.delete(artist);
+        
+        // Enviar notificação de deleção
+        notificationService.sendNotification(
+            NotificationType.ARTIST_DELETED,
+            "Artista Removido",
+            String.format("O artista '%s' foi removido do sistema.", artistName)
+        );
     }
     
     // Métodos auxiliares de conversão
