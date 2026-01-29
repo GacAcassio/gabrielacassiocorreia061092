@@ -92,7 +92,7 @@ public class AlbumServiceImpl implements AlbumService {
             throw new ResourceNotFoundException("Artist", "id", artistId);
         }
         
-        Page<Album> page = albumRepository.findByArtistsId(artistId, pageable);
+        Page<Album> page = albumRepository.findByArtists_Id(artistId, pageable);
         
         List<AlbumSummaryDTO> content = page.getContent().stream()
                 .map(this::toSummaryDTO)

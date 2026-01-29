@@ -18,74 +18,68 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
- * Configuração de segurança da aplicação
- * Configura JWT, CORS, Rate Limiting e endpoints públicos/privados
+ * Configuração de segurança da aplicação.
  */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    
+
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    
+
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
-    
+
     @Autowired
     private RateLimitFilter rateLimitFilter;
-    
+
     @Autowired
     private UserDetailsService userDetailsService;
-    
+
+    @Autowired
+    private CorsConfigurationSource corsConfigurationSource;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // CORS configurado pelo CorsConfig
-            .cors(cors -> {})
-            
-            // Desabilitar CSRF (APIs REST stateless não precisam)
+            // Configura CORS
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
+
+            // Desabilita CSRF
             .csrf(csrf -> csrf.disable())
-            
-            // Configurar endpoints públicos e privados
+
+            // Permite OPTIONS sem autenticação (para preflight CORS)
             .authorizeHttpRequests(auth -> auth
-                // Endpoints públicos (sem autenticação)
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(
-                    "/api/v1/auth/**",        // Login, refresh
-                    "/actuator/health/**",    // Health checks
-                    "/swagger-ui/**",         // Swagger UI
-                    "/v3/api-docs/**"         // OpenAPI docs
+                    "/api/v1/auth/**",
+                    "/actuator/health/**",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**"
                 ).permitAll()
-                
-                // Todos os outros endpoints requerem autenticação
                 .anyRequest().authenticated()
             )
-            
-            // Tratar erros de autenticação (401)
-            .exceptionHandling(ex -> ex
-                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-            )
-            
-            // Stateless (não criar sessão)
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            );
-        
-        // Adicionar filtros customizados
-        // 1. JWT Filter (valida token)
+
+            // Trata exceções de autenticação
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+
+            // Stateless
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+            // Provider de autenticação
+            .authenticationProvider(authenticationProvider());
+
+        // Adiciona filtros
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        
-        // 2. Rate Limit Filter (após JWT, pois precisa do username)
         http.addFilterAfter(rateLimitFilter, JwtAuthenticationFilter.class);
-        
+
         return http.build();
     }
-    
-    /**
-     * Provider de autenticação
-     */
+
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -93,20 +87,12 @@ public class SecurityConfig {
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
-    
-    /**
-     * AuthenticationManager para autenticar usuários
-     */
+
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authConfig
-    ) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
-    
-    /**
-     * Encoder de senhas (BCrypt)
-     */
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

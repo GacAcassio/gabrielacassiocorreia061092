@@ -20,3 +20,15 @@ INSERT INTO albums (title, artist_id, release_year) VALUES
     ('Use Your Illusion I', 4, 1991),
     ('Use Your Illusion II', 4, 1991),
     ('Greatest Hits', 4, 2004);
+
+INSERT INTO users (username, email, password, created_at, updated_at)
+VALUES (
+    'admin',
+    'admin@artists.com',
+    '$2a$10$LAUcZ.dgpNbfXyl1/OKKpen4wYPSmhxmRzbkdchgDkx6gZziwqdnG', -- senha: admin123
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+)
+ON CONFLICT (username) DO NOTHING;
+
+

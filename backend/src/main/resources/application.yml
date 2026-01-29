@@ -3,10 +3,13 @@ spring:
     name: artists-api
   
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/artists_db}
+    # 👉 Dentro do Docker, o host deve ser o nome do serviço do banco (não localhost)
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://artists-postgres:5432/artists_db}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      initialization-fail-timeout: 60000  # espera até 60s antes de falhar
   
   jpa:
     hibernate:
@@ -35,25 +38,32 @@ management:
       show-details: always
 
 app:
+  # 👉 Configuração de armazenamento MinIO
   minio:
-    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    endpoint: ${MINIO_ENDPOINT:http://artists-minio:9000}
     access-key: ${MINIO_ACCESS_KEY:minioadmin}
     secret-key: ${MINIO_SECRET_KEY:minioadmin}
     bucket-name: album-covers
-    presigned-url-expiration: 1800
-  
+    presigned-url-expiration: 1800  # 30 minutos
+
+  # 👉 Configuração JWT (tokens)
   jwt:
     secret: ${JWT_SECRET:change-this-secret-key-in-production-use-256-bits}
-    expiration: 300000
-    refresh-expiration: 86400000
-  
+    expiration: 300000             # 5 minutos
+    refresh-expiration: 86400000   # 1 dia
+
+  # ✅ Configuração CORS (funciona em local e Docker)
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200}
+    # Permite múltiplas origens: React local, Angular, e frontend no Docker Compose
+    # Pode ser sobrescrito por variável de ambiente CORS_ALLOWED_ORIGINS
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000,http://artists-frontend:3000,http://localhost:4200}
   
+  # Limite de requisições por usuário (Rate Limiting)
   rate-limit:
     requests: 10
     duration: 60
-  
+
+  # API regional externa
   regional-api:
     url: https://integrador-argus-api.geia.vip/v1/regionais
 
