@@ -25,22 +25,22 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 🔹 Divide a string em múltiplas origens e remove espaços extras
+        // Divide a string em múltiplas origens e remove espaços extras
         List<String> origins = Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
                 .collect(Collectors.toList());
 
-        // 🔹 Usa padrões em vez de origens fixas (melhor para wildcard ou variáveis)
+        // Usa padrões em vez de origens fixas (melhor para wildcard ou variáveis)
         configuration.setAllowedOriginPatterns(origins);
 
-        // 🔹 Métodos e headers liberados
+        // Métodos e headers liberados
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization", "Link", "X-Total-Count"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
-        // 🔹 Aplica globalmente
+        // Aplica globalmente
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
