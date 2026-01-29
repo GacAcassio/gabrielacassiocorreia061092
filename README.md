@@ -522,19 +522,19 @@ public class Album {
 - [x] Criar AlbumRepository com paginação
 
 **Integração com MinIO**
-- [ ] Configurar cliente MinIO/S3
-- [ ] Criar serviço para upload de imagens
-- [ ] Implementar geração de presigned URLs (30 min expiração)
-- [ ] Criar bucket
+- [x] Configurar cliente MinIO/S3
+- [x] Criar serviço para upload de imagens
+- [x] Implementar geração de presigned URLs (30 min expiração)
+- [x] Criar bucket
 
 **Endpoints de Álbuns**
-- [ ] Implementar POST /api/v1/albums - criar álbum
-- [ ] Implementar POST /api/v1/albums/{id}/covers - upload múltiplas capas
-- [ ] Implementar GET /api/v1/albums - listar com paginação
-- [ ] Implementar GET /api/v1/albums/{id} - buscar por ID
-- [ ] Implementar PUT /api/v1/albums/{id} - atualizar álbum
-- [ ] Implementar GET /api/v1/artists/{id}/albums - álbuns de um artista
-- [ ] Retornar presigned URLs nas respostas
+- [x] Implementar POST /api/v1/albums - criar álbum
+- [x] Implementar POST /api/v1/albums/{id}/covers - upload múltiplas capas
+- [x] Implementar GET /api/v1/albums - listar com paginação
+- [x] Implementar GET /api/v1/albums/{id} - buscar por ID
+- [x] Implementar PUT /api/v1/albums/{id} - atualizar álbum
+- [x] Implementar GET /api/v1/artists/{id}/albums - álbuns de um artista
+- [x] Retornar presigned URLs nas respostas
 
 ---
 
