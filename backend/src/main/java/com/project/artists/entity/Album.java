@@ -15,7 +15,6 @@ import java.util.Set;
 
 /**
  * Entidade Album
- * Relacionamento N:N com Artist (um álbum pode ter vários artistas)
  */
 @Entity
 @Table(name = "albums")
@@ -31,8 +30,6 @@ public class Album {
     
     /**
      * RELACIONAMENTO N:N COM ARTISTS
-     * Um álbum pode ter múltiplos artistas (colaborações)
-     * Um artista pode ter múltiplos álbuns
      */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

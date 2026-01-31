@@ -14,43 +14,21 @@ import java.util.List;
  */
 public interface AlbumService {
     
-    /**
-     * Cria novo álbum
-     */
+  
     AlbumResponseDTO create(AlbumRequestDTO request);
     
-    /**
-     * Busca álbum por ID
-     */
+
     AlbumResponseDTO findById(Long id);
     
-    /**
-     * Lista todos os álbuns com paginação
-     */
     PageResponseDTO<AlbumSummaryDTO> findAll(Pageable pageable);
-    
-    /**
-     * Busca álbuns de um artista específico
-     */
+
     PageResponseDTO<AlbumSummaryDTO> findByArtistId(Long artistId, Pageable pageable);
     
-    /**
-     * Atualiza álbum existente
-     */
     AlbumResponseDTO update(Long id, AlbumRequestDTO request);
-    
-    /**
-     * Deleta álbum por ID
-     */
+
     void delete(Long id);
     
-    /**
-     * Faz upload de capas para um álbum
-     */
     AlbumResponseDTO uploadCovers(Long id, List<MultipartFile> files);
     
-    /**
-     * Remove uma capa específica
-     */
     AlbumResponseDTO removeCover(Long id, String coverUrl);
 }

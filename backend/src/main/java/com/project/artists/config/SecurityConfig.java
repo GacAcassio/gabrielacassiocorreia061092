@@ -20,9 +20,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-/**
- * Configuração de segurança da aplicação.
- */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -46,34 +43,30 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Configura CORS
+            // Habilita CORS usando sua configuração global
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
 
             // Desabilita CSRF
             .csrf(csrf -> csrf.disable())
 
-            // Permite OPTIONS sem autenticação (para preflight CORS)
+            // Configura endpoints públicos e privados
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(
                     "/api/v1/auth/**",
-                    "/actuator/health/**",
+                    "/actuator/**",
                     "/swagger-ui/**",
                     "/v3/api-docs/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
 
-            // Trata exceções de autenticação
+            // Exceções
             .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
 
             // Stateless
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-            // Provider de autenticação
-            .authenticationProvider(authenticationProvider());
-
-        // Adiciona filtros
+        // Filtros customizados
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(rateLimitFilter, JwtAuthenticationFilter.class);
 
@@ -82,15 +75,15 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
     @Bean

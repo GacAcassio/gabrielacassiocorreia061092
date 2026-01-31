@@ -9,13 +9,7 @@ import com.project.artists.dto.response.AuthResponseDTO;
  */
 public interface AuthService {
     
-    /**
-     * Realiza login e retorna tokens JWT
-     */
     AuthResponseDTO login(LoginRequestDTO loginRequest);
     
-    /**
-     * Renova access token usando refresh token
-     */
     AuthResponseDTO refreshToken(RefreshTokenRequestDTO refreshRequest);
 }

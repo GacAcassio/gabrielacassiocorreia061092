@@ -31,8 +31,6 @@ public class Artist {
     
     /**
      * RELACIONAMENTO N:N COM ALBUMS
-     * mappedBy indica que Album é o dono do relacionamento
-     * JsonIgnore evita loop infinito na serialização JSON
      */
     @ManyToMany(mappedBy = "artists", fetch = FetchType.LAZY)
     @JsonIgnore

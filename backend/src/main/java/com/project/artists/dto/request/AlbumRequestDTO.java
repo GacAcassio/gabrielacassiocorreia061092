@@ -9,7 +9,6 @@ import java.util.List;
 
 /**
  * DTO para criar/atualizar álbuns
- * Como agora é N:N, um álbum pode ter múltiplos artistas
  */
 public class AlbumRequestDTO {
     

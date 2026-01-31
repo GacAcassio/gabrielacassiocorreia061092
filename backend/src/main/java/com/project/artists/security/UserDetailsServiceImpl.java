@@ -30,7 +30,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 ));
         
         // Retornar UserDetails do Spring Security
-        // Por enquanto, sem roles/authorities (adicionaremos depois se necessário)
         return org.springframework.security.core.userdetails.User
                 .builder()
                 .username(user.getUsername())

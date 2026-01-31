@@ -16,12 +16,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     /**
      * Configura o message broker
-     * 
-     * - enableSimpleBroker: Define os tópicos de destino para mensagens broadcast
-     *   Clientes se inscrevem em "/topic/*" para receber notificações
-     * 
-     * - setApplicationDestinationPrefixes: Define prefixo para mensagens do cliente
-     *   Mensagens do cliente para o servidor usam "/app/*"
      */
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
