@@ -541,15 +541,15 @@ public class Album {
 ### Sprint 5 - WebSocket e Notificações 
 
 **Configuração WebSocket**
-- [ ] Adicionar dependência spring-boot-starter-websocket
-- [ ] Configurar WebSocket broker (STOMP)
-- [ ] Criar endpoint WebSocket /ws
+- [x] Adicionar dependência spring-boot-starter-websocket
+- [x] Configurar WebSocket broker (STOMP)
+- [x] Criar endpoint WebSocket /ws
 
 **Notificações**
-- [ ] Criar serviço de notificações
-- [ ] Emitir evento ao cadastrar novo álbum
-- [ ] Enviar notificação via WebSocket para clientes conectados
-- [ ] Documentar protocolo WebSocket no README
+- [x] Criar serviço de notificações
+- [x] Emitir evento ao cadastrar novo álbum
+- [x] Enviar notificação via WebSocket para clientes conectados
+- [x] Documentar protocolo WebSocket no README
 
 ---
 
@@ -591,15 +591,15 @@ public class Album {
 ### Sprint 8 - Frontend Base (React/Angular) 
 
 **Setup Frontend**
-- [ ] Inicializar projeto (Create React App + TypeScript ou Angular CLI)
-- [ ] Configurar Tailwind CSS
-- [ ] Configurar estrutura de pastas (components, services, pages, models)
-- [ ] Criar Dockerfile para frontend
-- [ ] Configurar variáveis de ambiente
+- [x] Inicializar projeto (Create React App + TypeScript ou Angular CLI)
+- [x] Configurar Tailwind CSS
+- [x] Configurar estrutura de pastas (components, services, pages, models)
+- [x] Criar Dockerfile para frontend
+- [x] Configurar variáveis de ambiente
 
 **Serviços Base**
 - [ ] Criar HttpClient service com interceptors
-- [x] Criar AuthService com gestão de token JWT
+- [ ] Criar AuthService com gestão de token JWT
 - [ ] Implementar renovação automática de token
 - [ ] Criar interceptor para adicionar token 
 
