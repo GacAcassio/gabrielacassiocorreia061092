@@ -3,7 +3,7 @@ spring:
     name: artists-api
   
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://artists-postgres:5432/artists_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://artists-postgres:5433/artists_db}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -52,7 +52,7 @@ app:
     refresh-expiration: 86400000   # 1 dia
 
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000,http://artists-frontend:3000,http://localhost:4200}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000,http://artists-frontend:3000,http://localhost:8085,http://localhost:4200}
   
   # Limite de requisições por usuário (Rate Limiting)
   rate-limit:
@@ -69,3 +69,4 @@ logging:
     com.project.artists: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+

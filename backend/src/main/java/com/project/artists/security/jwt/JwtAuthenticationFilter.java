@@ -4,6 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,70 +19,88 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * Filtro que intercepta requisições e valida o token JWT
+ * Filtro JWT - Valida tokens APENAS para API REST
+ * WebSocket paths são COMPLETAMENTE IGNORADOS
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
     @Autowired
     private JwtTokenProvider tokenProvider;
-    
+
     @Autowired
     private UserDetailsService userDetailsService;
-    
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        
+        // Lista COMPLETA de paths WebSocket/SockJS que devem ser ignorados
+        boolean isWebSocketPath = 
+            path.startsWith("/ws") ||
+            path.startsWith("/ws/") ||
+            path.startsWith("/app/") ||
+            path.startsWith("/topic/") ||
+            path.startsWith("/queue/") ||
+            path.contains("/websocket") ||
+            path.contains("/sockjs") ||
+            path.contains("/xhr") ||
+            path.contains("/eventsource") ||
+            path.contains("/htmlfile") ||
+            path.contains("/jsonp") ||
+            path.endsWith("/info");
+        
+        // Outros endpoints públicos
+        boolean isPublicPath = 
+            path.startsWith("/api/v1/auth/") ||
+            path.startsWith("/swagger-ui/") ||
+            path.startsWith("/v3/api-docs/") ||
+            path.startsWith("/actuator/");
+        
+        boolean shouldSkip = isWebSocketPath || isPublicPath;
+        
+       // if (isWebSocketPath) {
+        //    logger.debug("JwtAuthFilter: Ignorando path WebSocket: {}", path);
+       // }
+        
+        return shouldSkip;
+    }
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        
         try {
-            // 1. Extrair token do header Authorization
             String jwt = getJwtFromRequest(request);
-            
-            // 2. Validar token
+
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                
-                // 3. Extrair username do token
                 String username = tokenProvider.getUsernameFromToken(jwt);
-                
-                // 4. Carregar usuário do banco
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                
-                // 5. Criar autenticação
+
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-                
-                authentication.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                
-                // 6. Setar no contexto do Spring Security
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                
+                //logger.debug("Usuário autenticado: {}", username);
             }
         } catch (Exception ex) {
-            logger.error("Não foi possível setar autenticação do usuário no contexto de segurança", ex);
+            //logger.error(" Erro ao autenticar usuário: {}", ex.getMessage());
         }
-        
-        // 7. Continuar chain de filtros
+
         filterChain.doFilter(request, response);
     }
-    
-    /**
-     * Extrai JWT do header Authorization: Bearer <token>
-     */
+
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7); // Remove "Bearer " prefix
+            return bearerToken.substring(7);
         }
-        
         return null;
     }
 }
