@@ -1,6 +1,6 @@
 package com.project.artists.security.ratelimit;
 
-import com.project.artists.exception.RateLimitExceededException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,23 +8,29 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Filtro de Rate Limiting - Limita requisições por usuário
  */
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(RateLimitFilter.class);
-    
+
     @Autowired
     private RateLimitService rateLimitService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -36,78 +42,88 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         // Lista COMPLETA de paths WebSocket/SockJS que devem ser ignorados
-        boolean isWebSocketPath = 
-            path.startsWith("/ws") ||
-            path.startsWith("/ws/") ||
-            path.startsWith("/app/") ||
-            path.startsWith("/topic/") ||
-            path.startsWith("/queue/") ||
-            path.contains("/websocket") ||
-            path.contains("/sockjs") ||
-            path.contains("/xhr") ||
-            path.contains("/eventsource") ||
-            path.contains("/htmlfile") ||
-            path.contains("/jsonp") ||
-            path.endsWith("/info");
+        boolean isWebSocketPath =
+                path.startsWith("/ws") ||
+                path.startsWith("/ws/") ||
+                path.startsWith("/app/") ||
+                path.startsWith("/topic/") ||
+                path.startsWith("/queue/") ||
+                path.contains("/websocket") ||
+                path.contains("/sockjs") ||
+                path.contains("/xhr") ||
+                path.contains("/eventsource") ||
+                path.contains("/htmlfile") ||
+                path.contains("/jsonp") ||
+                path.endsWith("/info");
 
         // Outros endpoints públicos
-        boolean isPublicPath = 
-            path.startsWith("/api/v1/auth/") ||
-            path.startsWith("/actuator/") ||
-            path.startsWith("/swagger-ui/") ||
-            path.startsWith("/v3/api-docs/");
-        
+        boolean isPublicPath =
+                path.startsWith("/api/v1/auth/") ||
+                path.startsWith("/actuator/") ||
+                path.startsWith("/swagger-ui/") ||
+                path.startsWith("/v3/api-docs/");
+
         boolean shouldSkip = isWebSocketPath || isPublicPath;
-        
+
         if (isWebSocketPath) {
             logger.debug("🔓 RateLimitFilter: Ignorando path WebSocket: {}", path);
         }
-        
+
         return shouldSkip;
     }
-    
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        
-        // Obter autenticação do contexto
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
-        // Aplicar rate limit apenas para usuários autenticados
-        if (authentication != null && authentication.isAuthenticated() 
+
+        // Aplica rate limit apenas para usuários autenticados (não anonymous)
+        if (authentication != null
+                && authentication.isAuthenticated()
                 && !"anonymousUser".equals(authentication.getPrincipal())) {
-            
+
             String username = authentication.getName();
-            
-            // Verificar se pode fazer requisição
+
+            // Se NÃO pode fazer requisição -> retorna 429 e encerra
             if (!rateLimitService.allowRequest(username)) {
                 long retryAfter = rateLimitService.getRetryAfter(username);
-                
-                // Adicionar headers de rate limit
+
+                response.setStatus(429); // Too Many Requests
+                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                response.setCharacterEncoding("UTF-8");
+
+                // Headers úteis para o front
                 response.setHeader("X-RateLimit-Limit", "10");
                 response.setHeader("X-RateLimit-Remaining", "0");
                 response.setHeader("X-RateLimit-Reset", String.valueOf(retryAfter));
                 response.setHeader("Retry-After", String.valueOf(retryAfter));
-                
-                //logger.warn("Rate limit excedido para usuário: {}", username);
-                
-                // Lançar exceção que será tratada pelo GlobalExceptionHandler
-                throw new RateLimitExceededException(
-                    "Limite de requisições excedido. Tente novamente em " + retryAfter + " segundos.",
-                    retryAfter
-                );
+
+                Map<String, Object> body = new HashMap<>();
+                body.put("timestamp", Instant.now().toString());
+                body.put("status", 429);
+                body.put("error", "Too Many Requests");
+                body.put("message", "Limite de requisições excedido. Tente novamente em " + retryAfter + " segundos.");
+                body.put("retryAfter", retryAfter);
+                body.put("path", request.getRequestURI());
+
+                // logger.warn("Rate limit excedido para usuário={} path={} retryAfter={}s",
+                //         username, request.getRequestURI(), retryAfter);
+
+                objectMapper.writeValue(response.getWriter(), body);
+                return; 
             }
-            
-            // Adicionar headers informativos
+
+            // Se passou no rate limit -> adiciona headers informativos
             int remaining = rateLimitService.getRemainingRequests(username);
             response.setHeader("X-RateLimit-Limit", "10");
             response.setHeader("X-RateLimit-Remaining", String.valueOf(remaining));
         }
-        
-        // Continuar chain de filtros
+
+        // Continua chain normalmente
         filterChain.doFilter(request, response);
     }
 }

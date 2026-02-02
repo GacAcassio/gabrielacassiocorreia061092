@@ -47,8 +47,8 @@ app:
 
   # Configuração JWT (tokens)
   jwt:
-    secret: ${JWT_SECRET:change-this-secret-key-in-production-use-256-bits}
-    expiration: 300000             # 5 minutos
+    secret: ${JWT_SECRET:Z9vP1xKq8mR2tW7yN4uL6sA3dH5jF0cE_B7nQ2pX9rT1}
+    expiration: 30000000             # 5 minutos
     refresh-expiration: 86400000   # 1 dia
 
   cors:

@@ -17,98 +17,120 @@ import java.util.Date;
  */
 @Component
 public class JwtTokenProvider {
-    
+
     @Value("${app.jwt.secret}")
     private String jwtSecret;
-    
+
     @Value("${app.jwt.expiration}")
-    private long jwtExpirationMs; // 300000 = 5 minutos
-    
+    private long jwtExpirationMs;
+
     @Value("${app.jwt.refresh-expiration}")
-    private long jwtRefreshExpirationMs; // 86400000 = 24 horas
-    
-    /**
+    private long jwtRefreshExpirationMs;
+
+    private static final String CLAIM_TOKEN_TYPE = "type";
+    private static final String TYPE_ACCESS = "access";
+    private static final String TYPE_REFRESH = "refresh";
+
+     /**
      * Gera token de acesso (5 minutos)
      */
     public String generateAccessToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return generateToken(userDetails.getUsername(), jwtExpirationMs);
+        return generateToken(userDetails.getUsername(), jwtExpirationMs, TYPE_ACCESS);
     }
-    
-    /**
+     /**
      * Gera token de acesso a partir do username
      */
     public String generateAccessToken(String username) {
-        return generateToken(username, jwtExpirationMs);
+        return generateToken(username, jwtExpirationMs, TYPE_ACCESS);
     }
-    
     /**
      * Gera refresh token (24 horas)
      */
     public String generateRefreshToken(String username) {
-        return generateToken(username, jwtRefreshExpirationMs);
+        return generateToken(username, jwtRefreshExpirationMs, TYPE_REFRESH);
     }
-    
+
     /**
      * Gera token genérico
      */
-    private String generateToken(String username, long expirationMs) {
+    private String generateToken(String username, long expirationMs, String type) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationMs);
-        
+
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-        
+
         return Jwts.builder()
                 .subject(username)
+                .claim(CLAIM_TOKEN_TYPE, type)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(key)
                 .compact();
     }
-    
-    /**
-     * Extrai username do token
-     */
-    public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8)))
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-        
-        return claims.getSubject();
-    }
-    
-    /**
+     /**
      * Valida token JWT
      */
     public boolean validateToken(String token) {
         try {
             SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-            
+
             Jwts.parser()
                 .verifyWith(key)
+                .clockSkewSeconds(60)
                 .build()
                 .parseSignedClaims(token);
-            
+
             return true;
-        } catch (SecurityException ex) {
-            System.err.println("Assinatura JWT invalida: " + ex.getMessage());
-        } catch (MalformedJwtException ex) {
-            System.err.println("Token JWT invalido: " + ex.getMessage());
-        } catch (ExpiredJwtException ex) {
-            System.err.println("Token JWT expirado: " + ex.getMessage());
-        } catch (UnsupportedJwtException ex) {
-            System.err.println("Token JWT nao suportado: " + ex.getMessage());
-        } catch (IllegalArgumentException ex) {
-            System.err.println("JWT claims string esta vazia: " + ex.getMessage());
+
+        } catch (ExpiredJwtException e) {
+            System.out.println("JWT EXPIRADO: " + e.getMessage());
+        } catch (SecurityException e) {
+            System.out.println("ASSINATURA INVÁLIDA (secret mudou?): " + e.getMessage());
+        } catch (MalformedJwtException e) {
+            System.out.println("JWT MALFORMADO (token truncado): " + e.getMessage());
+        } catch (JwtException | IllegalArgumentException e) {
+            System.out.println("JWT INVÁLIDO: " + e.getMessage());
         }
-        
         return false;
     }
-    
+
+     /**
+     * Valida token refresh
+     */
+    public boolean validateRefreshToken(String token) {
+        if (!validateToken(token)) return false;
+
+        try {
+            Claims claims = getAllClaims(token);
+            String type = claims.get(CLAIM_TOKEN_TYPE, String.class);
+            return TYPE_REFRESH.equals(type);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     /**
-     * Retorna tempo de expiração do access token em segundos
+     * Extrai username do token
+     */
+    public String getUsernameFromToken(String token) {
+        return getAllClaims(token).getSubject();
+    }
+
+    /**
+     * Extrai username do token
+     */s
+    public Claims getAllClaims(String token) {
+        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    /**
+     *  Retorna tempo de expiração
      */
     public long getExpirationInSeconds() {
         return jwtExpirationMs / 1000;
