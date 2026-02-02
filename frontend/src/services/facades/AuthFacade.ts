@@ -24,12 +24,10 @@ class AuthFacade {
   /**
    * Realiza logout do usuário
    */
-  logout(): void {
-      httpClient.setLoggingOut(true); // <-- sinaliza logout manual
+  logout(): void {  
       authService.logout();
       authStore.clear();
       window.dispatchEvent(new Event('auth:logout'));
-      httpClient.setLoggingOut(false); // opcional, reseta flag
   }
 
 
