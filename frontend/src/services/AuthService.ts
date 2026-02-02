@@ -94,6 +94,23 @@ class AuthService {
           // console.error('Status:', error.response.status);
           // console.error('Headers:', error.response.headers);
           // console.error('Data:', error.response.data);
+                 
+          //Extrai mensagem de erro
+          const message = error.response.data?.message 
+            || error.response.data?.error 
+            || error.response.statusText;
+          
+          if (error.response.status === 401) {
+            throw new Error('Usuário ou senha incorretos');
+          } else if (error.response.status === 403) {
+            throw new Error('Acesso negado');
+          } else if (error.response.status === 404) {
+            throw new Error('Endpoint de login não encontrado. Verifique o backend.');
+          } else if (error.response.status >= 500) {
+            throw new Error('Erro no servidor: ' + message);
+          } else {
+            throw new Error(message || `Erro ${error.response.status}`);
+          }
           
           
         } else if (error.request) {
@@ -111,12 +128,12 @@ class AuthService {
         } else {
           // Erro na configuração da requisição
           //console.error(' Erro na configuração:', error.message);
-          //throw new Error('Erro ao configurar requisição: ' + error.message);
+          throw new Error('Erro ao configurar requisição: ' + error.message);
         }
       } else {
         // Erro não identificado
         //console.error('Erro desconhecido:', error);
-        //throw new Error(error.message || 'Erro desconhecido ao fazer login');
+        throw new Error(error.message || 'Erro desconhecido ao fazer login');
       }
     }
   }
