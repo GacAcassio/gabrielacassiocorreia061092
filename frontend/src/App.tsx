@@ -131,7 +131,6 @@ function App() {
 
     // Listener para token expirado
     const handleTokenExpired = () => {
-      authFacade.logout();
       window.location.href = '/home';
     };
 

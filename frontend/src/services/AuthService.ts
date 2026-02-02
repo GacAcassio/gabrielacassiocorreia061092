@@ -199,20 +199,7 @@ class AuthService {
    */
   isAuthenticated(): boolean {
     const token = localStorage.getItem(config.auth.tokenKey);
-    const expiresAt = localStorage.getItem(config.auth.expiresAtKey);
-
-    if (!token || !expiresAt) {
-      return false;
-    }
-
-    // Verifica se o token expirou
-    const now = Date.now();
-    if (now >= parseInt(expiresAt)) {
-      this.logout();
-      return false;
-    }
-
-    return true;
+    return !!token;
   }
 
   /**
