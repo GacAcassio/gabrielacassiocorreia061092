@@ -31,4 +31,10 @@ public interface AlbumService {
     AlbumResponseDTO uploadCovers(Long id, List<MultipartFile> files);
     
     AlbumResponseDTO removeCover(Long id, String coverUrl);
+
+    PageResponseDTO<AlbumSummaryDTO> searchByTitle(String title, Pageable pageable);
+    
+    PageResponseDTO<AlbumSummaryDTO> searchByArtistName(String name, Pageable pageable);
+    
+    
 }

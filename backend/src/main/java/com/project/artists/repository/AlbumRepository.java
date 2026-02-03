@@ -9,4 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AlbumRepository extends JpaRepository<Album, Long> {
     Page<Album> findByArtists_Id(Long artistId, Pageable pageable);
+    Page<Album> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+    Page<Album> findDistinctByArtists_NameContainingIgnoreCase(String name, Pageable pageable);
+    
 }
