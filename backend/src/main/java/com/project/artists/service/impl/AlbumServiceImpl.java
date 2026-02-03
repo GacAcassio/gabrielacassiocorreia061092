@@ -237,9 +237,6 @@ public class AlbumServiceImpl implements AlbumService {
         return toResponseDTO(updated);
     }
 
-    // =====================================================
-    // PESQUISAS (SEM BUILDER, SEM MAPPER)
-    // =====================================================
 
     @Override
     @Transactional(readOnly = true)
@@ -277,9 +274,6 @@ public class AlbumServiceImpl implements AlbumService {
         );
     }
 
-    // =====================================================
-    // MÉTODOS AUXILIARES
-    // =====================================================
 
     private Set<Artist> findArtistsByIds(List<Long> artistIds) {
         if (artistIds == null || artistIds.isEmpty()) {

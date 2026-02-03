@@ -69,7 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
             
             if (!StringUtils.hasText(jwt)) {
-                logger.debug("Nenhum token JWT encontrado no header Authorization");
+                //logger.debug("Nenhum token JWT encontrado no header Authorization");
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -116,11 +116,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 userDetails = userDetailsService.loadUserByUsername(username);
                 //logger.debug("UserDetails carregado: username={}, authorities={}", 
-                           userDetails.getUsername(), 
-                           userDetails.getAuthorities());
+                          // userDetails.getUsername(), 
+                          // userDetails.getAuthorities());
             } catch (Exception ex) {
                 //logger.error("Erro ao carregar UserDetails para username '{}': {}", 
-                           username, ex.getMessage());
+                           //username, ex.getMessage());
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -170,7 +170,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // NÃO propagar exceção, apenas continuar
         }
         
-        // 8. SEMPRE continuar chain de filtros
+        // SEMPRE continuar chain de filtros
         try {
             filterChain.doFilter(request, response);
         } catch (Exception ex) {
@@ -212,9 +212,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } //else {
                 //logger.trace("Nenhum Authorization header encontrado");
             //}
-        } //catch (Exception ex) {
+        } catch (Exception ex) {
            // logger.error("Erro ao extrair JWT do request: {}", ex.getMessage());
-        //}
+        }
         
         return null;
     }

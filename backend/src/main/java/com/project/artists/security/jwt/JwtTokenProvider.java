@@ -119,7 +119,7 @@ public class JwtTokenProvider {
 
     /**
      * Extrai username do token
-     */s
+     */
     public Claims getAllClaims(String token) {
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
         return Jwts.parser()
