@@ -483,7 +483,7 @@ public class Album {
 - [x] Implementar renovação de token
 - [x] Criar endpoint POST /api/v1/auth/login
 - [x] Criar endpoint POST /api/v1/auth/refresh
-- [x] Documentar autenticação no Swagger
+- [ ] Documentar autenticação no Swagger
 
 **Rate Limiting**
 - [x] Implementar interceptor/filter para rate limit
@@ -558,14 +558,14 @@ public class Album {
 **Implementação da Sincronização**
 - [x] Criar entidade Regional (id, nome, ativo)
 - [x] Criar RegionalRepository
-- [ ] Implementar client HTTP para consumir API externa
-- [ ] Criar serviço de sincronização com algoritmo eficiente:
-  - [ ] Buscar regionais da API externa
-  - [ ] Buscar regionais locais ativas
-  - [ ] Comparar e identificar: novos, removidos, alterados
-  - [ ] Inserir novos, inativar removidos, inativar e criar novos para alterados
-- [ ] Criar endpoint GET /api/v1/regionais/sync para trigger manual
-- [ ] Implementar scheduled job (opcional: sync automático)
+- [x] Implementar client HTTP para consumir API externa
+- [x] Criar serviço de sincronização com algoritmo eficiente:
+  - [x] Buscar regionais da API externa
+  - [x] Buscar regionais locais ativas
+  - [x] Comparar e identificar: novos, removidos, alterados
+  - [x] Inserir novos, inativar removidos, inativar e criar novos para alterados
+- [x] Criar endpoint GET /api/v1/regionais/sync para trigger manual
+- [x] Implementar scheduled job (opcional: sync automático)
 - [ ] Documentar complexidade algorítmica no README
 
 ---
@@ -573,16 +573,16 @@ public class Album {
 ### Sprint 7 - Health Checks e Testes Backend 
 
 **Health Checks**
-- [ ] Implementar endpoint /actuator/health
-- [ ] Configurar liveness probe
-- [ ] Configurar readiness probe
-- [ ] Incluir health checks do PostgreSQL e MinIO
+- [x] Implementar endpoint /actuator/health
+- [x] Configurar liveness probe
+- [x] Configurar readiness probe
+- [x] Incluir health checks do PostgreSQL e MinIO
 
 **Testes Unitários**
 - [ ] Testes unitários para ArtistService
 - [ ] Testes unitários para AlbumService
 - [ ] Testes unitários para AuthService
-- [ ] Testes unitários para RegionalSyncService
+- [ ]Testes unitários para RegionalSyncService
 - [ ] Testes de controllers (MockMvc)
 - [ ] Cobertura mínima de 70%
 
@@ -598,77 +598,77 @@ public class Album {
 - [x] Configurar variáveis de ambiente
 
 **Serviços Base**
-- [ ] Criar HttpClient service com interceptors
-- [ ] Criar AuthService com gestão de token JWT
-- [ ] Implementar renovação automática de token
-- [ ] Criar interceptor para adicionar token 
+- [x] Criar HttpClient service com interceptors
+- [x] Criar AuthService com gestão de token JWT
+- [x] Implementar renovação automática de token
+- [x] Criar interceptor para adicionar token 
 
 ### Sprint 9 - Telas de Autenticação 
 
 **Login**
-- [ ] Criar componente de Login
-- [ ] Formulário com validação (email/username, senha)
-- [ ] Integrar com AuthService
-- [ ] Redirecionar após login bem-sucedido
-- [ ] Exibir mensagens de erro
-- [ ] Layout responsivo
+- [x] Criar componente de Login
+- [x] Formulário com validação (email/username, senha)
+- [x] Integrar com AuthService
+- [x] Redirecionar após login bem-sucedido
+- [x] Exibir mensagens de erro
+- [x] Layout responsivo
 
 **Guards e Rotas**
-- [ ] Criar AuthGuard para proteger rotas
-- [ ] Configurar rotas públicas e privadas
-- [ ] Implementar Lazy Loading para módulos
+- [x] Criar AuthGuard para proteger rotas
+- [x] Configurar rotas públicas e privadas
+- [x] Implementar Lazy Loading para módulos
 
 ---
 
 ### Sprint 10 - Listagem de Artistas 
 
 **Componentes**
-- [ ] Criar página de listagem de artistas
-- [ ] Criar componente de card/tabela de artista
-- [ ] Exibir nome e número de álbuns
-- [ ] Layout responsivo (grid/flexbox)
+- [x] Criar página de listagem de artistas
+- [x] Criar componente de card/tabela de artista
+- [x] Exibir nome e número de álbuns
+- [x] Layout responsivo (grid/flexbox)
 
 **Funcionalidades**
-- [ ] Implementar campo de busca por nome
-- [ ] Implementar ordenação (asc/desc)
-- [ ] Implementar paginação ou scroll infinito
-- [ ] Integrar com ArtistService
-- [ ] Loading states e error handling
+- [x] Implementar campo de busca por nome
+- [x] Implementar ordenação (asc/desc)
+- [x] Implementar paginação ou scroll infinito
+- [x] Integrar com ArtistService
+- [x] Loading states e error handling
 
 ---
 
 ### Sprint 11 - Detalhamento e Cadastro 
 
 **Tela de Detalhamento**
-- [ ] Criar página de detalhes do artista
-- [ ] Exibir informações completas do artista
-- [ ] Listar álbuns associados com capas
-- [ ] Exibir presigned URLs das imagens
-- [ ] Mensagem quando não houver álbuns
+- [x] Criar página de detalhes do artista
+- [x] Exibir informações completas do artista
+- [x] Listar álbuns associados com capas
+- [x] Exibir presigned URLs das imagens
+- [x] Mensagem quando não houver álbuns
 
 **Formulários**
-- [ ] Criar formulário de cadastro/edição de artista
-- [ ] Validações de formulário (ReactHookForm ou Angular Forms)
-- [ ] Criar formulário de cadastro/edição de álbum
-- [ ] Implementar upload de múltiplas imagens
-- [ ] Preview de imagens antes do upload
-- [ ] Feedback de sucesso/erro
+- [x] Criar formulário de cadastro/edição de artista
+- [x] Validações de formulário (ReactHookForm ou Angular Forms)
+- [x] Criar formulário de cadastro/edição de álbum
+- [x] Implementar upload de múltiplas imagens
+- [x] Preview de imagens antes do upload
+- [x] Feedback de sucesso/erro
 
 ---
 
 ### Sprint 12 - WebSocket Frontend e Notificações 
 
 **Integração WebSocket**
-- [ ] Adicionar biblioteca WebSocket (SockJS, Stomp)
-- [ ] Criar serviço WebSocket
-- [ ] Conectar ao endpoint /ws
-- [ ] Escutar eventos de novos álbuns
+- [x] Adicionar biblioteca WebSocket (SockJS, Stomp)
+- [x] Criar serviço WebSocket
+- [x] Conectar ao endpoint /ws
+- [x] Escutar eventos de novos álbuns
 
 **Sistema de Notificações**
-- [ ] Criar componente de notificação (toast/snackbar)
-- [ ] Exibir notificação ao receber evento de novo álbum
-- [ ] Auto-dismiss após alguns segundos
-- [ ] Permitir navegação ao álbum notificado
+- [x] Criar componente de notificação (toast/snackbar)
+- [x] Exibir notificação ao receber evento de novo álbum
+- [x] Auto-dismiss após alguns segundos
+- [x] Permitir navegação ao álbum notificado
 
 ---
 
