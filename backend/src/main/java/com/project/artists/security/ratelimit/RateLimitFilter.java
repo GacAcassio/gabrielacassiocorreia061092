@@ -66,7 +66,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         boolean shouldSkip = isWebSocketPath || isPublicPath;
 
         if (isWebSocketPath) {
-            logger.debug("🔓 RateLimitFilter: Ignorando path WebSocket: {}", path);
+            //logger.debug("RateLimitFilter: Ignorando path WebSocket: {}", path);
         }
 
         return shouldSkip;
