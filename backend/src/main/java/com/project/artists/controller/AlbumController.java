@@ -154,4 +154,54 @@ public class AlbumController {
         AlbumResponseDTO response = albumService.removeCover(id, coverUrl);
         return ResponseEntity.ok(response);
     }
+
+        /**
+     * Buscar álbuns por título
+     */
+    @GetMapping("/search")
+    @Operation(summary = "Buscar por título", description = "Busca álbuns por título (case insensitive)")
+    public ResponseEntity<PageResponseDTO<AlbumSummaryDTO>> searchByTitle(
+            @Parameter(description = "Título ou parte do título")
+            @RequestParam String title,
+
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
+    ) {
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        PageResponseDTO<AlbumSummaryDTO> response = albumService.searchByTitle(title, pageable);
+        return ResponseEntity.ok(response);
+    }
+
+    /*
+     * Buscar álbuns pelo nome do artista
+     */
+    @GetMapping("/search/artist")
+    @Operation(summary = "Buscar álbuns por artista", description = "Busca álbuns pelo nome do artista (case insensitive)")
+    public ResponseEntity<PageResponseDTO<AlbumSummaryDTO>> searchByArtistName(
+            @Parameter(description = "Nome do artista ou parte do nome")
+            @RequestParam String name,
+
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "releaseYear") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction
+    ) {
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        PageResponseDTO<AlbumSummaryDTO> response = albumService.searchByArtistName(name, pageable);
+        return ResponseEntity.ok(response);
+    }
+
+
 }

@@ -51,6 +51,7 @@ public class SecurityConfig {
 
             // Configura endpoints públicos e privados
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/files/**").permitAll()
                 .requestMatchers(
                     "/api/v1/auth/**",
                     "/actuator/**",

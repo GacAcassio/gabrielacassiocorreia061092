@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import io.minio.SetBucketPolicyArgs;
+import io.minio.GetBucketPolicyArgs;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -23,6 +25,12 @@ public class MinioServiceImpl implements MinioService {
     
     @Autowired
     private MinioClient minioClient;
+    
+    @Value("${app.minio.endpoint}")
+    private String internalEndpoint;  
+    
+    @Value("${app.minio.external-endpoint}")
+    private String externalEndpoint;  
     
     @Value("${app.minio.bucket-name}")
     private String bucketName;
@@ -89,18 +97,8 @@ public class MinioServiceImpl implements MinioService {
     
     @Override
     public String generatePresignedUrl(String objectName) {
-        try {
-            return minioClient.getPresignedObjectUrl(
-                GetPresignedObjectUrlArgs.builder()
-                    .method(Method.GET)
-                    .bucket(bucketName)
-                    .object(objectName)
-                    .expiry(presignedUrlExpiration, TimeUnit.SECONDS)
-                    .build()
-            );
-        } catch (Exception e) {
-            throw new RuntimeException("Erro ao gerar URL pré-assinada: " + e.getMessage(), e);
-        }
+        // Return Spring backend proxy URL instead of MinIO direct URL
+        return externalEndpoint.replace("9002", "8085") + "/api/v1/files/" + objectName;
     }
     
     @Override
@@ -141,18 +139,44 @@ public class MinioServiceImpl implements MinioService {
             return false;
         }
     }
-    
+
     private void ensureBucketExists() {
         try {
             boolean exists = bucketExists();
             
             if (!exists) {
+                // Create bucket
                 minioClient.makeBucket(
                     MakeBucketArgs.builder()
                         .bucket(bucketName)
                         .build()
                 );
             }
+            
+            // ALWAYS set the policy (even if bucket already exists)
+            String policy = String.format("""
+                {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {"AWS": "*"},
+                            "Action": ["s3:GetObject"],
+                            "Resource": "arn:aws:s3:::%s/*"
+                        }
+                    ]
+                }
+                """, bucketName);
+            
+            minioClient.setBucketPolicy(
+                SetBucketPolicyArgs.builder()
+                    .bucket(bucketName)
+                    .config(policy)
+                    .build()
+            );
+            
+            System.out.println("Bucket policy set successfully for: " + bucketName);
+            
         } catch (Exception e) {
             throw new RuntimeException("Erro ao criar bucket: " + e.getMessage(), e);
         }

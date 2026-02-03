@@ -2,8 +2,16 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { authFacade } from './services/facades';
 import { authStore } from './stores';
+import { PrivateRoute } from './guards';
+import { NotificationContainer } from './components';
 import {
   LoginPage,
+  ArtistsListPage,
+  ArtistDetailPage,
+  ArtistFormPage,
+  AlbumsListPage,
+  AlbumDetailPage,
+  AlbumFormPage,
 } from './pages';
 import './App.css';
 
@@ -93,6 +101,12 @@ const Header: React.FC = () => {
               </>
             ) : (
               <>
+                <Link to="/artists" className={linkClass('/artists')}>
+                  Artistas
+                </Link>
+                <Link to="/albums" className={linkClass('/albums')}>
+                  Álbuns
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 rounded-lg transition-colors font-medium text-white hover:bg-red-600 bg-red-500"
@@ -117,7 +131,6 @@ function App() {
 
     // Listener para token expirado
     const handleTokenExpired = () => {
-      authFacade.logout();
       window.location.href = '/home';
     };
 
@@ -131,6 +144,8 @@ function App() {
   return (
     <BrowserRouter>
       <div className="App min-h-screen bg-gray-50">
+        {/* Sistema de Notificações */}
+        <NotificationContainer />
         <Header />
         
         <main className="container mx-auto p-4 min-h-[calc(100vh-180px)]">
@@ -140,6 +155,17 @@ function App() {
             
             {/* Auth */}
             <Route path="/login" element={<LoginPage />} />
+            
+            {/* TODAS AS ROTAS PROTEGIDAS */}
+            <Route path="/artists" element={<PrivateRoute><ArtistsListPage /></PrivateRoute>} />
+            <Route path="/artists/new" element={<PrivateRoute><ArtistFormPage /></PrivateRoute>} />
+            <Route path="/artists/:id" element={<PrivateRoute><ArtistDetailPage /></PrivateRoute>} />
+            <Route path="/artists/:id/edit" element={<PrivateRoute><ArtistFormPage /></PrivateRoute>} />
+            
+            <Route path="/albums" element={<PrivateRoute><AlbumsListPage /></PrivateRoute>} />
+            <Route path="/albums/new" element={<PrivateRoute><AlbumFormPage /></PrivateRoute>} />
+            <Route path="/albums/:id" element={<PrivateRoute><AlbumDetailPage /></PrivateRoute>} />
+            <Route path="/albums/:id/edit" element={<PrivateRoute><AlbumFormPage /></PrivateRoute>} />
 
             {/* 404 */}
             <Route path="*" element={<Navigate to="/" replace />} />

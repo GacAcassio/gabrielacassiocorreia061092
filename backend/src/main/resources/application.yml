@@ -40,6 +40,7 @@ app:
   # Configuração de armazenamento MinIO
   minio:
     endpoint: ${MINIO_ENDPOINT:http://artists-minio:9000}
+    external-endpoint: ${MINIO_EXTERNAL_ENDPOINT:http://localhost:9002}  # Add this line
     access-key: ${MINIO_ACCESS_KEY:minioadmin}
     secret-key: ${MINIO_SECRET_KEY:minioadmin}
     bucket-name: album-covers
@@ -47,13 +48,12 @@ app:
 
   # Configuração JWT (tokens)
   jwt:
-    secret: ${JWT_SECRET:change-this-secret-key-in-production-use-256-bits}
-    expiration: 300000             # 5 minutos
+    secret: ${JWT_SECRET:Z9vP1xKq8mR2tW7yN4uL6sA3dH5jF0cE_B7nQ2pX9rT1}
+    expiration: 30000000             # 5 minutos
     refresh-expiration: 86400000   # 1 dia
 
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000,http://artists-frontend:3000,http://localhost:8085,http://localhost:4200}
-  
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000,http://artists-frontend:3000,http://localhost:8085,http://localhost:4200,http://localhost:9002}
   # Limite de requisições por usuário (Rate Limiting)
   rate-limit:
     requests: 10
@@ -61,7 +61,15 @@ app:
 
   # API regional externa
   regional-api:
+    connect-timeout: 15000      # 15s conexão
+    read-timeout: 120000         # 90s leitura (ajuste conforme sua API)
+    max-retries: 3              # 3 tentativas
     url: https://integrador-argus-api.geia.vip/v1/regionais
+  
+  # Sincronização automática de regionais
+  regional-sync:
+    enabled: false              # true para habilitar sync automático
+    cron: "0 0 2 * * ?"        # Todo dia às 2h da manhã
 
 logging:
   level:
@@ -69,4 +77,3 @@ logging:
     com.project.artists: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-

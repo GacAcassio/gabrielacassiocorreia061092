@@ -5,14 +5,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Configuração do cliente MinIO
- */
 @Configuration
 public class MinioConfig {
     
     @Value("${app.minio.endpoint}")
     private String endpoint;
+    
+    @Value("${app.minio.external-endpoint:${app.minio.endpoint}}")
+    private String externalEndpoint;
     
     @Value("${app.minio.access-key}")
     private String accessKey;
@@ -26,5 +26,10 @@ public class MinioConfig {
                 .endpoint(endpoint)
                 .credentials(accessKey, secretKey)
                 .build();
+    }
+    
+    @Bean
+    public String minioExternalEndpoint() {
+        return externalEndpoint;
     }
 }

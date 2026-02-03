@@ -34,7 +34,6 @@ public class CorsConfig {
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
-        //Debug
         //System.out.println("Allowed origin patterns: " + configuration.getAllowedOriginPatterns());
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -5,35 +5,17 @@ import java.time.LocalDateTime;
 /**
  * DTO para notificações em tempo real via WebSocket
  * 
- * Representa uma mensagem de notificação que será enviada
- * aos clientes conectados via WebSocket quando eventos importantes ocorrem
  */
 public class NotificationDTO {
     
-    /**
-     * Tipo da notificação
-     */
     private NotificationType type;
     
-    /**
-     * Título da notificação
-     */
     private String title;
-    
-    /**
-     * Mensagem detalhada
-     */
+  
     private String message;
     
-    /**
-     * Dados adicionais (opcional)
-     * Pode conter informações específicas do evento
-     */
     private Object data;
     
-    /**
-     * Timestamp da notificação
-     */
     private LocalDateTime timestamp;
     
     // Construtores

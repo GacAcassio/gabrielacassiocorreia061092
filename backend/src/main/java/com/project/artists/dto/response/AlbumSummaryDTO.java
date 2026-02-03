@@ -1,5 +1,5 @@
 package com.project.artists.dto.response;
-
+import com.project.artists.entity.Album;
 import java.util.ArrayList;
 import java.util.List;
 
