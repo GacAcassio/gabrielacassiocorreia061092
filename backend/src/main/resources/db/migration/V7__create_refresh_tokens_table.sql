@@ -1,0 +1,8 @@
+CREATE TABLE refresh_tokens (
+    id BIGSERIAL PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    token VARCHAR(1000) NOT NULL UNIQUE,
+    revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL
+);
