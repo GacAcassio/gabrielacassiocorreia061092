@@ -51,7 +51,6 @@ const ArtistsListPage: React.FC = () => {
     // Observa mudanças na store e atualiza a lista na tela
     const subscription = artistStore.state$.subscribe(state => {
       if (state.artists) {
-        // aqui garante que a lista exibida é a lista filtrada que veio da API
         setArtists(state.artists.content);
         setTotalPages(state.artists.totalPages);
       }
@@ -65,14 +64,13 @@ const ArtistsListPage: React.FC = () => {
   const loadArtists = async () => {
     const requestId = ++requestIdRef.current;
 
-    const isSearching = !!debouncedSearch?.trim();
-    if (isSearching) setSearchLoading(true);
+    setSearchLoading(true);
 
     try {
       await artistFacade.list({
         page: currentPage,
         size: 12,
-        name: debouncedSearch?.trim() || undefined, // ✅ envia o filtro pro backend
+        name: debouncedSearch?.trim() || undefined,
         sort: 'name',
         direction: sortDirection,
       });
@@ -110,7 +108,6 @@ const ArtistsListPage: React.FC = () => {
   // botão de pesquisar (busca imediata sem esperar debounce)
   const handleSearchClick = () => {
     setCurrentPage(0);
-    loadArtists();
   };
 
   const toggleSort = () => {
@@ -149,14 +146,6 @@ const ArtistsListPage: React.FC = () => {
               </svg>
               Novo Artista
             </button>
-
-            {/* Se quiser o botão de logout no header */}
-            {/* <button
-              onClick={handleLogout}
-              className="px-6 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-            >
-              Sair
-            </button> */}
           </div>
         </div>
       </div>
@@ -204,9 +193,7 @@ const ArtistsListPage: React.FC = () => {
             </div>
 
             <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
-              {searchLoading && (
-                <span className="text-primary-600 font-medium">Buscando...</span>
-              )}
+              {searchLoading && <span className="text-primary-600 font-medium">Buscando...</span>}
               {!searchLoading && searchTerm && (
                 <span>Você pode clicar em “Pesquisar” para aplicar imediatamente.</span>
               )}
@@ -268,12 +255,7 @@ const ArtistsListPage: React.FC = () => {
       {/* Nenhum resultado */}
       {!loading && !error && artists.length === 0 && (
         <div className="bg-white shadow-md rounded-lg p-12 text-center">
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -282,9 +264,7 @@ const ArtistsListPage: React.FC = () => {
             />
           </svg>
 
-          <h3 className="mt-2 text-lg font-medium text-gray-900">
-            Nenhum artista encontrado
-          </h3>
+          <h3 className="mt-2 text-lg font-medium text-gray-900">Nenhum artista encontrado</h3>
 
           <p className="mt-1 text-sm text-gray-500">
             {searchTerm ? 'Tente buscar com outros termos.' : 'Comece criando um novo artista.'}
