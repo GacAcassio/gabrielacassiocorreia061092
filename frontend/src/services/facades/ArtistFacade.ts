@@ -8,12 +8,42 @@ import { ArtistRequest, PageRequest } from '../../models';
  */
 class ArtistFacade {
   /**
-   * Lista artistas com paginação e filtros
+   * Lista artistas com paginação e filtros (inclui pesquisa por nome)
    */
   async list(params?: PageRequest & { name?: string }): Promise<void> {
     try {
       artistStore.setLoading(true);
+      artistStore.setError(null);
+
+  
       const artists = await artistService.list(params);
+
+      artistStore.setArtists(artists);
+    } catch (error: any) {
+      artistStore.setError(error.message);
+      throw error;
+    } finally {
+      artistStore.setLoading(false);
+    }
+  }
+
+  /**
+   * Pesquisa por nome (atalho)
+   * OBS: se name estiver vazio, lista tudo.
+   */
+  async search(name: string, params?: PageRequest): Promise<void> {
+    try {
+      artistStore.setLoading(true);
+      artistStore.setError(null);
+
+      const artists = await artistService.search({
+        page: params?.page ?? 0,
+        size: params?.size ?? 12,
+        sort: params?.sort ?? 'name',
+        direction: params?.direction ?? 'asc',
+        name,
+      });
+
       artistStore.setArtists(artists);
     } catch (error: any) {
       artistStore.setError(error.message);
@@ -29,6 +59,8 @@ class ArtistFacade {
   async getById(id: number): Promise<void> {
     try {
       artistStore.setLoading(true);
+      artistStore.setError(null);
+
       const artist = await artistService.getById(id);
       artistStore.setSelectedArtist(artist);
     } catch (error: any) {
@@ -45,10 +77,12 @@ class ArtistFacade {
   async create(artist: ArtistRequest): Promise<void> {
     try {
       artistStore.setLoading(true);
+      artistStore.setError(null);
+
       const newArtist = await artistService.create(artist);
       artistStore.setSelectedArtist(newArtist);
-      
-      // Recarrega a lista
+
+      // Recarrega lista
       await this.list();
     } catch (error: any) {
       artistStore.setError(error.message);
@@ -64,10 +98,12 @@ class ArtistFacade {
   async update(id: number, artist: ArtistRequest): Promise<void> {
     try {
       artistStore.setLoading(true);
+      artistStore.setError(null);
+
       const updatedArtist = await artistService.update(id, artist);
       artistStore.setSelectedArtist(updatedArtist);
-      
-      // Recarrega a lista
+
+      // Recarrega lista
       await this.list();
     } catch (error: any) {
       artistStore.setError(error.message);
@@ -83,10 +119,12 @@ class ArtistFacade {
   async delete(id: number): Promise<void> {
     try {
       artistStore.setLoading(true);
+      artistStore.setError(null);
+
       await artistService.delete(id);
       artistStore.clearSelectedArtist();
-      
-      // Recarrega a lista
+
+      // Recarrega lista
       await this.list();
     } catch (error: any) {
       artistStore.setError(error.message);
@@ -97,7 +135,7 @@ class ArtistFacade {
   }
 
   /**
-   * Limpa o artista selecionado
+   * Limpa artista selecionado
    */
   clearSelected(): void {
     artistStore.clearSelectedArtist();

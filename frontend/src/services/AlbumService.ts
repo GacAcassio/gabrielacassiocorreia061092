@@ -14,7 +14,7 @@ class AlbumService {
   async list(params?: PageRequest): Promise<PageResponse<AlbumSummary>> {
     try {
       const queryParams = new URLSearchParams();
-      
+
       if (params?.page !== undefined) {
         queryParams.append('page', params.page.toString());
       }
@@ -31,10 +31,92 @@ class AlbumService {
       const response = await httpClient.get<PageResponse<AlbumSummary>>(
         `${this.basePath}?${queryParams.toString()}`
       );
-      
+
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Erro ao listar álbuns');
+    }
+  }
+
+  /**
+   * Busca álbuns por título (PAGINADO)
+   * Endpoint esperado: GET /albums/search?title=...
+   */
+  async searchByTitle(
+    params: PageRequest & { title: string }
+  ): Promise<PageResponse<AlbumSummary>> {
+    try {
+      const queryParams = new URLSearchParams();
+
+      // obrigatório
+      queryParams.append('title', params.title);
+
+      // paginação
+      if (params?.page !== undefined) {
+        queryParams.append('page', params.page.toString());
+      }
+      if (params?.size !== undefined) {
+        queryParams.append('size', params.size.toString());
+      }
+
+      // ordenação (opcional)
+      if (params?.sort) {
+        queryParams.append('sort', params.sort);
+      }
+      if (params?.direction) {
+        queryParams.append('direction', params.direction);
+      }
+
+      const response = await httpClient.get<PageResponse<AlbumSummary>>(
+        `${this.basePath}/search?${queryParams.toString()}`
+      );
+
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Erro ao buscar álbuns pelo título'
+      );
+    }
+  }
+
+  /**
+   * Busca álbuns pelo nome do artista (PAGINADO)
+   * Endpoint esperado: GET /albums/search/artist?name=...
+   */
+  async searchByArtistName(
+    params: PageRequest & { name: string }
+  ): Promise<PageResponse<AlbumSummary>> {
+    try {
+      const queryParams = new URLSearchParams();
+
+      // obrigatório
+      queryParams.append('name', params.name);
+
+      // paginação
+      if (params?.page !== undefined) {
+        queryParams.append('page', params.page.toString());
+      }
+      if (params?.size !== undefined) {
+        queryParams.append('size', params.size.toString());
+      }
+
+      // ordenação (opcional)
+      if (params?.sort) {
+        queryParams.append('sort', params.sort);
+      }
+      if (params?.direction) {
+        queryParams.append('direction', params.direction);
+      }
+
+      const response = await httpClient.get<PageResponse<AlbumSummary>>(
+        `${this.basePath}/search/artist?${queryParams.toString()}`
+      );
+
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Erro ao buscar álbuns pelo artista'
+      );
     }
   }
 
@@ -53,10 +135,13 @@ class AlbumService {
   /**
    * Lista álbuns de um artista
    */
-  async getByArtistId(artistId: number, params?: PageRequest): Promise<PageResponse<AlbumSummary>> {
+  async getByArtistId(
+    artistId: number,
+    params?: PageRequest
+  ): Promise<PageResponse<AlbumSummary>> {
     try {
       const queryParams = new URLSearchParams();
-      
+
       if (params?.page !== undefined) {
         queryParams.append('page', params.page.toString());
       }
@@ -67,10 +152,12 @@ class AlbumService {
       const response = await httpClient.get<PageResponse<AlbumSummary>>(
         `/artists/${artistId}/albums?${queryParams.toString()}`
       );
-      
+
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Erro ao listar álbuns do artista');
+      throw new Error(
+        error.response?.data?.message || 'Erro ao listar álbuns do artista'
+      );
     }
   }
 
@@ -91,7 +178,10 @@ class AlbumService {
    */
   async update(id: number, album: AlbumRequest): Promise<Album> {
     try {
-      const response = await httpClient.put<Album>(`${this.basePath}/${id}`, album);
+      const response = await httpClient.put<Album>(
+        `${this.basePath}/${id}`,
+        album
+      );
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Erro ao atualizar álbum');
@@ -104,27 +194,21 @@ class AlbumService {
   async uploadCovers(albumId: number, files: File[]): Promise<Album> {
     try {
       const formData = new FormData();
-      
-      // Adiciona cada arquivo com o nome 'files'
+
       files.forEach((file) => {
         formData.append('files', file);
       });
 
-      // console.log('Fazendo upload de', files.length, 'arquivo(s)');
-      // console.log('URL:', `${this.basePath}/${albumId}/covers`);
-
-      // Axios detecta FormData automaticamente e configura Content-Type
       const response = await httpClient.post<Album>(
         `${this.basePath}/${albumId}/covers`,
         formData
       );
-      
-      // console.log('Upload realizado com sucesso');
+
       return response.data;
     } catch (error: any) {
-      // console.error('Erro no upload:', error);
-      // console.error('Response:', error.response?.data);
-      throw new Error(error.response?.data?.message || 'Erro ao fazer upload das capas');
+      throw new Error(
+        error.response?.data?.message || 'Erro ao fazer upload das capas'
+      );
     }
   }
 

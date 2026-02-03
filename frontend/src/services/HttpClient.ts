@@ -25,9 +25,7 @@ class HttpClient {
     this.instance = axios.create({
       baseURL: config.api.baseURL,
       timeout: config.api.timeout,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      // headers: { "Content-Type": "application/json" },
     });
 
     this.setupInterceptors();
@@ -49,13 +47,26 @@ class HttpClient {
   }
 
   private setupInterceptors(): void {
-    // REQUEST: adiciona access token
+    // REQUEST: adiciona access token + controla Content-Type
     this.instance.interceptors.request.use(
       (requestConfig: InternalAxiosRequestConfig) => {
         const token = localStorage.getItem(config.auth.tokenKey);
 
         if (token) {
           requestConfig.headers.Authorization = `Bearer ${token}`;
+        }
+
+        // Detecta FormData
+        const isFormData =
+          typeof FormData !== "undefined" && requestConfig.data instanceof FormData;
+
+        if (isFormData) {
+          if (requestConfig.headers && "Content-Type" in requestConfig.headers) {
+            delete requestConfig.headers["Content-Type"];
+          }
+        } else {
+          // JSON normal
+          requestConfig.headers["Content-Type"] = "application/json";
         }
 
         return requestConfig;

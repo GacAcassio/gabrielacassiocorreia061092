@@ -24,6 +24,44 @@ class AlbumFacade {
   }
 
   /**
+   * Busca álbuns por título (PAGINADO)
+   * Endpoint esperado: GET /api/v1/albums/search?title=...
+   */
+  async searchByTitle(
+    params: PageRequest & { title: string }
+  ): Promise<void> {
+    try {
+      albumStore.setLoading(true);
+      const albums = await albumService.searchByTitle(params);
+      albumStore.setAlbums(albums);
+    } catch (error: any) {
+      albumStore.setError(error.message);
+      throw error;
+    } finally {
+      albumStore.setLoading(false);
+    }
+  }
+
+  /**
+   * Busca álbuns pelo nome do artista (PAGINADO)
+   * Endpoint esperado: GET /api/v1/albums/search/artist?name=...
+   */
+  async searchByArtistName(
+    params: PageRequest & { name: string }
+  ): Promise<void> {
+    try {
+      albumStore.setLoading(true);
+      const albums = await albumService.searchByArtistName(params);
+      albumStore.setAlbums(albums);
+    } catch (error: any) {
+      albumStore.setError(error.message);
+      throw error;
+    } finally {
+      albumStore.setLoading(false);
+    }
+  }
+
+  /**
    * Busca álbum por ID
    */
   async getById(id: number): Promise<void> {
@@ -63,7 +101,7 @@ class AlbumFacade {
       albumStore.setLoading(true);
       const newAlbum = await albumService.create(album);
       albumStore.setSelectedAlbum(newAlbum);
-      
+
       // Recarrega a lista
       await this.list();
     } catch (error: any) {
@@ -82,7 +120,7 @@ class AlbumFacade {
       albumStore.setLoading(true);
       const updatedAlbum = await albumService.update(id, album);
       albumStore.setSelectedAlbum(updatedAlbum);
-      
+
       // Recarrega a lista
       await this.list();
     } catch (error: any) {
@@ -117,7 +155,7 @@ class AlbumFacade {
       albumStore.setLoading(true);
       await albumService.delete(id);
       albumStore.clearSelectedAlbum();
-      
+
       // Recarrega a lista
       await this.list();
     } catch (error: any) {

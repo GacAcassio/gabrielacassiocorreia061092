@@ -5,18 +5,28 @@ import { albumStore, authStore } from '../../stores';
 import { Loading, ErrorMessage } from '../../components';
 import { AlbumSummary } from '../../models/Artist';
 
+type SearchMode = 'title' | 'artist';
+
 /**
  * Página de listagem de álbuns (PÚBLICA - todos podem ver)
  * Botões de ação aparecem apenas para usuários logados
  */
 const AlbumsListPage: React.FC = () => {
   const navigate = useNavigate();
+
   const [albums, setAlbums] = useState<AlbumSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Pesquisa
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchMode, setSearchMode] = useState<SearchMode>('title');
+  const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
     // Observa autenticação
@@ -28,10 +38,7 @@ const AlbumsListPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    loadAlbums();
-  }, [currentPage]);
-
-  useEffect(() => {
+    // Observa store de álbuns
     const subscription = albumStore.state$.subscribe(state => {
       if (state.albums) {
         setAlbums(state.albums.content);
@@ -44,8 +51,36 @@ const AlbumsListPage: React.FC = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    // Sempre que trocar página, decide se busca ou lista normal
+    loadAlbums();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage]);
+
   const loadAlbums = async () => {
     try {
+      const term = searchTerm.trim();
+
+      // Se já pesquisou e tem termo, mantém filtrado ao paginar
+      if (hasSearched && term.length > 0) {
+        if (searchMode === 'title') {
+          await albumFacade.searchByTitle({
+            page: currentPage,
+            size: 12,
+            title: term,
+          });
+          return;
+        }
+
+        await albumFacade.searchByArtistName({
+          page: currentPage,
+          size: 12,
+          name: term,
+        });
+        return;
+      }
+
+      // Caso contrário lista normal
       await albumFacade.list({
         page: currentPage,
         size: 12,
@@ -55,13 +90,66 @@ const AlbumsListPage: React.FC = () => {
     }
   };
 
+  const handleSearch = async () => {
+    const term = searchTerm.trim();
+
+    // Se vazio -> volta para listagem normal
+    if (!term) {
+      setHasSearched(false);
+      setCurrentPage(0);
+
+      try {
+        await albumFacade.list({ page: 0, size: 12 });
+      } catch (err) {
+        console.error('Error loading albums:', err);
+      }
+      return;
+    }
+
+    setHasSearched(true);
+    setCurrentPage(0);
+
+    try {
+      if (searchMode === 'title') {
+        await albumFacade.searchByTitle({
+          page: 0,
+          size: 12,
+          title: term,
+        });
+      } else {
+        await albumFacade.searchByArtistName({
+          page: 0,
+          size: 12,
+          name: term,
+        });
+      }
+    } catch (err) {
+      console.error('Error searching albums:', err);
+    }
+  };
+
+  const handleClearSearch = async () => {
+    setSearchTerm('');
+    setHasSearched(false);
+    setCurrentPage(0);
+
+    try {
+      await albumFacade.list({ page: 0, size: 12 });
+    } catch (err) {
+      console.error('Error clearing search:', err);
+    }
+  };
+
   const handlePageChange = (newPage: number) => {
+    if (newPage < 0 || newPage >= totalPages) return;
+
     setCurrentPage(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
     <div className="max-w-7xl mx-auto">
+      {/* Header */}
       <div className="bg-white shadow-md rounded-lg p-6 mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -70,10 +158,18 @@ const AlbumsListPage: React.FC = () => {
               <p className="text-gray-600 mt-1">Gerencie sua coleção de álbuns</p>
             ) : (
               <p className="text-gray-600 mt-1">
-                Explore os álbuns. <button onClick={() => navigate('/login')} className="text-primary-600 hover:underline font-semibold">Faça login</button> para gerenciá-los.
+                Explore os álbuns.{' '}
+                <button
+                  onClick={() => navigate('/login')}
+                  className="text-primary-600 hover:underline font-semibold"
+                >
+                  Faça login
+                </button>{' '}
+                para gerenciá-los.
               </p>
             )}
           </div>
+
           {isAuthenticated && (
             <button
               onClick={() => navigate('/albums/new')}
@@ -88,23 +184,87 @@ const AlbumsListPage: React.FC = () => {
         </div>
       </div>
 
+      {/* 🔎 Filtros de Pesquisa */}
+      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+        <div className="flex flex-col md:flex-row gap-4 items-end">
+          <div className="flex-1">
+            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+              Buscar
+            </label>
+            <input
+              id="search"
+              type="text"
+              placeholder={searchMode === 'title' ? 'Digite o título do álbum...' : 'Digite o nome do artista...'}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                //  Desativa Enter (não pesquisa ao apertar Enter)
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                }
+              }}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+
+          <div className="min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tipo de busca
+            </label>
+            <select
+              value={searchMode}
+              onChange={(e) => setSearchMode(e.target.value as SearchMode)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="title">Título</option>
+              <option value="artist">Artista</option>
+            </select>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={handleSearch}
+              className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+            >
+              Pesquisar
+            </button>
+
+            <button
+              onClick={handleClearSearch}
+              className="px-6 py-2 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 transition-colors"
+            >
+              Limpar
+            </button>
+          </div>
+        </div>
+
+        {hasSearched && (
+          <p className="text-sm text-gray-500 mt-3">
+            Mostrando resultados para: <span className="font-semibold">{searchTerm.trim()}</span> (
+            {searchMode === 'title' ? 'Título' : 'Artista'})
+          </p>
+        )}
+      </div>
+
+      {/* Loading */}
       {loading && !albums.length && (
         <div className="bg-white shadow-md rounded-lg p-12">
           <Loading message="Carregando álbuns..." />
         </div>
       )}
 
+      {/* Error */}
       {error && !loading && (
         <ErrorMessage message={error} onRetry={loadAlbums} />
       )}
 
+      {/* Empty */}
       {!loading && !error && albums.length === 0 && (
         <div className="bg-white shadow-md rounded-lg p-12 text-center">
           <h3 className="text-lg font-medium text-gray-900">Nenhum álbum encontrado</h3>
           <p className="mt-1 text-sm text-gray-500">
-            {isAuthenticated ? 'Comece criando um novo álbum.' : 'Ainda não há álbuns cadastrados.'}
+             Tente outro termo de busca.
           </p>
-          {isAuthenticated && (
             <div className="mt-6">
               <button
                 onClick={() => navigate('/albums/new')}
@@ -116,10 +276,10 @@ const AlbumsListPage: React.FC = () => {
                 Novo Álbum
               </button>
             </div>
-          )}
         </div>
       )}
 
+      {/* Lista */}
       {!loading && albums.length > 0 && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-6">
@@ -130,11 +290,7 @@ const AlbumsListPage: React.FC = () => {
                 className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer overflow-hidden"
               >
                 {album.coverUrl ? (
-                  <img
-                    src={album.coverUrl}
-                    alt={album.title}
-                    className="w-full h-48 object-cover"
-                  />
+                  <img src={album.coverUrl} alt={album.title} className="w-full h-48 object-cover" />
                 ) : (
                   <div className="w-full h-48 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
                     <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
@@ -142,6 +298,7 @@ const AlbumsListPage: React.FC = () => {
                     </svg>
                   </div>
                 )}
+
                 <div className="p-4">
                   <h3 className="font-semibold text-gray-800 truncate">{album.title}</h3>
                   <p className="text-sm text-gray-600 mt-1">
@@ -157,6 +314,7 @@ const AlbumsListPage: React.FC = () => {
             ))}
           </div>
 
+          {/* Paginação */}
           {totalPages > 1 && (
             <div className="bg-white shadow-md rounded-lg p-4">
               <div className="flex items-center justify-between">
@@ -167,9 +325,11 @@ const AlbumsListPage: React.FC = () => {
                 >
                   Anterior
                 </button>
+
                 <span className="text-sm text-gray-600">
                   Página {currentPage + 1} de {totalPages}
                 </span>
+
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage >= totalPages - 1}

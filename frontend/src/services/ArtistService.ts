@@ -13,31 +13,41 @@ class ArtistService {
   async list(params?: PageRequest & { name?: string }): Promise<PageResponse<ArtistSummary>> {
     try {
       const queryParams = new URLSearchParams();
-      
-      if (params?.page !== undefined) {
-        queryParams.append('page', params.page.toString());
-      }
-      if (params?.size !== undefined) {
-        queryParams.append('size', params.size.toString());
-      }
-      if (params?.sort) {
-        queryParams.append('sort', params.sort);
-      }
-      if (params?.direction) {
-        queryParams.append('direction', params.direction);
-      }
-      if (params?.name) {
-        queryParams.append('name', params.name);
+
+      if (params?.page !== undefined) queryParams.append('page', params.page.toString());
+      if (params?.size !== undefined) queryParams.append('size', params.size.toString());
+
+      if (params?.sort) queryParams.append('sortBy', params.sort);
+      if (params?.direction) queryParams.append('direction', params.direction);
+
+      const name = params?.name?.trim();
+
+      if (name) {
+        queryParams.append('name', name);
+
+        const response = await httpClient.get<PageResponse<ArtistSummary>>(
+          `${this.basePath}/search?${queryParams.toString()}`
+        );
+
+        return response.data;
       }
 
+      // Sem filtro -> lista normal
       const response = await httpClient.get<PageResponse<ArtistSummary>>(
         `${this.basePath}?${queryParams.toString()}`
       );
-      
+
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Erro ao listar artistas');
     }
+  }
+
+  /**
+   * Pesquisa por nome (atalho explícito)
+   */
+  async search(params: PageRequest & { name: string }): Promise<PageResponse<ArtistSummary>> {
+    return this.list(params);
   }
 
   /**

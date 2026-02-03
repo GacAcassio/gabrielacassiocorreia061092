@@ -5,6 +5,8 @@ import { albumStore, artistStore } from '../../stores';
 import { Loading, ErrorMessage } from '../../components';
 import { isValidName, isValidYear } from '../../utils';
 import { ArtistSummary } from '../../models';
+import ArtistPicker from '../../components/ArtistPicker';
+
 
 /**
  * Página de formulário de álbum (criar/editar) com upload
@@ -83,7 +85,7 @@ const AlbumFormPage: React.FC = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    console.log('📁 Arquivos selecionados:', files.length);
+    //console.log('Arquivos selecionados:', files.length);
     
     if (files.length === 0) return;
 
@@ -92,17 +94,17 @@ const AlbumFormPage: React.FC = () => {
       const isImage = file.type.startsWith('image/');
       const isUnder5MB = file.size <= 5 * 1024 * 1024;
       
-      if (!isImage) {
-        console.warn('⚠️ Arquivo não é imagem:', file.name, file.type);
-      }
-      if (!isUnder5MB) {
-        console.warn('⚠️ Arquivo muito grande:', file.name, (file.size / 1024 / 1024).toFixed(2), 'MB');
-      }
+      // if (!isImage) {
+      //   console.warn('Arquivo não é imagem:', file.name, file.type);
+      // }
+      // if (!isUnder5MB) {
+      //   console.warn(' Arquivo muito grande:', file.name, (file.size / 1024 / 1024).toFixed(2), 'MB');
+      // }
       
       return isImage && isUnder5MB;
     });
 
-    console.log('✅ Arquivos válidos:', validFiles.length);
+    // console.log('Arquivos válidos:', validFiles.length);
     validFiles.forEach(f => console.log('  -', f.name, f.type, (f.size / 1024).toFixed(2), 'KB'));
 
     setCoverFiles(validFiles);
@@ -159,36 +161,36 @@ const AlbumFormPage: React.FC = () => {
         releaseYear: releaseYear ? Number(releaseYear) : undefined,
       };
 
-      console.log('💾 Salvando álbum...', albumData);
+      // console.log('Salvando álbum...', albumData);
 
       if (isEditMode && id) {
         await albumFacade.update(parseInt(id), albumData);
-        console.log('✅ Álbum atualizado');
+        // console.log('Álbum atualizado');
         
         // Upload de capas se houver
         if (coverFiles.length > 0) {
-          console.log('📤 Iniciando upload de', coverFiles.length, 'capa(s)');
+          // console.log('Iniciando upload de', coverFiles.length, 'capa(s)');
           await albumFacade.uploadCovers(parseInt(id), coverFiles);
-          console.log('✅ Capas enviadas com sucesso');
+          // console.log('Capas enviadas com sucesso');
         }
       } else {
-        console.log('➕ Criando novo álbum...');
+        // console.log('Criando novo álbum...');
         await albumFacade.create(albumData);
-        console.log('✅ Álbum criado');
+        // console.log('Álbum criado');
         
         // Se criou com sucesso e tem capas, fazer upload
         const createdAlbum = albumStore.currentState.selectedAlbum;
         if (createdAlbum && coverFiles.length > 0) {
-          console.log('📤 Iniciando upload de', coverFiles.length, 'capa(s) para álbum', createdAlbum.id);
+          // console.log('Iniciando upload de', coverFiles.length, 'capa(s) para álbum', createdAlbum.id);
           await albumFacade.uploadCovers(createdAlbum.id, coverFiles);
-          console.log('✅ Capas enviadas com sucesso');
+          // console.log(' Capas enviadas com sucesso');
         }
       }
 
-      console.log('🎉 Processo concluído, redirecionando...');
+      // console.log(' Processo concluído, redirecionando...');
       navigate('/albums');
     } catch (err: any) {
-      console.error('❌ Erro ao salvar:', err);
+      // console.error(' Erro ao salvar:', err);
       setError(err.message || 'Erro ao salvar álbum');
     } finally {
       setLoading(false);
@@ -289,37 +291,18 @@ const AlbumFormPage: React.FC = () => {
           {/* Artistas */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Artistas * (selecione pelo menos um)
+              Artistas * (pesquise e adicione)
             </label>
-            <div className="border border-gray-300 rounded-lg p-4 max-h-60 overflow-y-auto">
-              {availableArtists.length > 0 ? (
-                <div className="space-y-2">
-                  {availableArtists.map(artist => (
-                    <label
-                      key={artist.id}
-                      className="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedArtistIds.includes(artist.id)}
-                        onChange={() => toggleArtist(artist.id)}
-                        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                        disabled={loading}
-                      />
-                      <span className="ml-3 text-gray-700">{artist.name}</span>
-                    </label>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500 text-center py-4">
-                  Nenhum artista cadastrado. Crie um artista primeiro.
-                </p>
-              )}
-            </div>
-            {validationErrors.artistIds && (
-              <p className="mt-1 text-sm text-red-600">{validationErrors.artistIds}</p>
-            )}
+
+            <ArtistPicker
+              availableArtists={availableArtists}
+              selectedArtistIds={selectedArtistIds}
+              onChange={setSelectedArtistIds}
+              disabled={loading}
+              error={validationErrors.artistIds}
+            />
           </div>
+
 
           {/* Upload de Capas */}
           <div>
