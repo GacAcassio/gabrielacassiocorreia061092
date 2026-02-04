@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { albumService } from '../../services';
+import { albumFacade } from '../../services/facades';
 import { authStore } from '../../stores';
 import { Loading, ErrorMessage } from '../../components';
 import { Album } from '../../models';
@@ -33,6 +34,23 @@ const AlbumDetailPage: React.FC = () => {
       loadAlbum(parseInt(id));
     }
   }, [id]);
+
+  const handleDelete = async () => {
+    if (!id || !album) return;
+  
+    const confirmed = window.confirm(
+        `Tem certeza que deseja excluir o album "${album.title}"?`
+    );
+  
+      if (confirmed) {
+        try {
+          await albumFacade.delete(parseInt(id));
+          navigate('/albums');
+        } catch (err) {
+          alert('Erro ao excluir album.');
+        }
+      }
+    };
 
   const loadAlbum = async (albumId: number) => {
     setLoading(true);
@@ -211,12 +229,18 @@ const AlbumDetailPage: React.FC = () => {
 
             {/* Ações - Apenas para logados */}
             {isAuthenticated ? (
-              <div className="pt-6 border-t">
+              <div className="flex flex-wrap gap-3 pt-6 border-t">
                 <button
                   onClick={handleEdit}
                   className="w-full bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors shadow-md"
                 >
                   Editar Álbum
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="w-full md:flex-initial bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors shadow-md"
+                >
+                  Excluir
                 </button>
               </div>
             ) : (

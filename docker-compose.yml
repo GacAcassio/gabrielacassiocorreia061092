@@ -73,10 +73,10 @@ services:
     networks:
       - artists-network
     depends_on:
-      postgres:
-        condition: service_healthy
       minio:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     environment:
       # Database
       SPRING_DATASOURCE_URL: jdbc:postgresql://artists-postgres:5432/artists_db

@@ -1,9 +1,21 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+  useLocation,
+  Navigate,
+  useNavigate,
+} from 'react-router-dom';
+
+import ReactMarkdown from 'react-markdown';
+
 import { authFacade } from './services/facades';
 import { authStore } from './stores';
 import { PrivateRoute } from './guards';
 import { NotificationContainer } from './components';
+
 import {
   LoginPage,
   ArtistsListPage,
@@ -13,6 +25,7 @@ import {
   AlbumDetailPage,
   AlbumFormPage,
 } from './pages';
+
 import './App.css';
 
 /**
@@ -20,29 +33,97 @@ import './App.css';
  */
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  
-  return (
-    <div className="text-center mt-10">
-      <h2 className="text-3xl font-bold text-gray-800 mb-4">
-        Projeto Seplag
-      </h2>
-      <p className="text-gray-600 mb-8">
-        Sprint 8
-      </p>
-      
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-gradient-to-r from-primary-500 to-purple-600 text-white rounded-lg shadow-lg p-8">
-          <h3 className="text-2xl font-bold mb-3"> Hello world!</h3>
-          <p className="mb-6">
-            ...
-          </p>
-          <button
-            onClick={() => navigate('/login')}
-            className="bg-white text-primary-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-md"
-          >
-            Fazer Login →
-          </button>
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [markdown, setMarkdown] = useState<string>('');
+  const [loadingMd, setLoadingMd] = useState(false);
+  const [mdError, setMdError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const subscription = authStore.currentUser$.subscribe(user => {
+      setIsAuthenticated(user !== null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const loadMarkdown = async () => {
+      try {
+        setLoadingMd(true);
+        setMdError(null);
+
+        const res = await fetch('/home.md');
+
+        if (!res.ok) {
+          throw new Error('Não foi possível carregar o arquivo markdown (/home.md)');
+        }
+
+        const text = await res.text();
+        setMarkdown(text);
+      } catch (err: any) {
+        setMdError(err?.message || 'Erro ao carregar markdown');
+      } finally {
+        setLoadingMd(false);
+      }
+    };
+
+    loadMarkdown();
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="text-center mt-10">
+        <h2 className="text-3xl font-bold text-gray-800 mb-4">
+          Projeto Seplag
+        </h2>
+
+        <p className="text-gray-600 mb-8">
+          Sprint 8
+        </p>
+
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-gradient-to-r from-primary-500 to-purple-600 text-white rounded-lg shadow-lg p-8">
+            <h3 className="text-2xl font-bold mb-3">Hello world!</h3>
+
+            <p className="mb-6">
+              ...
+            </p>
+
+            <button
+              onClick={() => navigate('/login')}
+              className="bg-white text-primary-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-md"
+            >
+              Fazer Login →
+            </button>
+          </div>
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto mt-10">
+      <div className="bg-white rounded-xl shadow-md p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          Requeisitos do Projeto
+        </h2>
+
+        {loadingMd && (
+          <p className="text-gray-500">Carregando conteúdo...</p>
+        )}
+
+        {mdError && (
+          <p className="text-red-600 font-medium">{mdError}</p>
+        )}
+
+        {!loadingMd && !mdError && (
+          <div className="prose max-w-none">
+            <ReactMarkdown>{markdown}</ReactMarkdown>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -55,7 +136,7 @@ const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
-  
+
   React.useEffect(() => {
     const subscription = authStore.currentUser$.subscribe(user => {
       setIsAuthenticated(user !== null);
@@ -72,11 +153,11 @@ const Header: React.FC = () => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
-  
+
   const linkClass = (path: string) => `
     px-4 py-2 rounded-lg transition-colors font-medium
-    ${isActive(path) 
-      ? 'bg-white text-primary-600' 
+    ${isActive(path)
+      ? 'bg-white text-primary-600'
       : 'text-white hover:bg-primary-700'
     }
   `;
@@ -85,10 +166,13 @@ const Header: React.FC = () => {
     <header className="bg-primary-600 text-white shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between py-4">
-          <Link to="/" className="text-2xl font-bold hover:text-primary-100 transition-colors">
+          <Link
+            to="/"
+            className="text-2xl font-bold hover:text-primary-100 transition-colors"
+          >
             Album repo
           </Link>
-          
+
           <nav className="flex items-center space-x-2">
             {!isAuthenticated ? (
               <>
@@ -146,26 +230,83 @@ function App() {
       <div className="App min-h-screen bg-gray-50">
         {/* Sistema de Notificações */}
         <NotificationContainer />
+
         <Header />
-        
+
         <main className="container mx-auto p-4 min-h-[calc(100vh-180px)]">
           <Routes>
             {/* Home */}
             <Route path="/" element={<HomePage />} />
-            
+
             {/* Auth */}
             <Route path="/login" element={<LoginPage />} />
-            
+
             {/* TODAS AS ROTAS PROTEGIDAS */}
-            <Route path="/artists" element={<PrivateRoute><ArtistsListPage /></PrivateRoute>} />
-            <Route path="/artists/new" element={<PrivateRoute><ArtistFormPage /></PrivateRoute>} />
-            <Route path="/artists/:id" element={<PrivateRoute><ArtistDetailPage /></PrivateRoute>} />
-            <Route path="/artists/:id/edit" element={<PrivateRoute><ArtistFormPage /></PrivateRoute>} />
-            
-            <Route path="/albums" element={<PrivateRoute><AlbumsListPage /></PrivateRoute>} />
-            <Route path="/albums/new" element={<PrivateRoute><AlbumFormPage /></PrivateRoute>} />
-            <Route path="/albums/:id" element={<PrivateRoute><AlbumDetailPage /></PrivateRoute>} />
-            <Route path="/albums/:id/edit" element={<PrivateRoute><AlbumFormPage /></PrivateRoute>} />
+            <Route
+              path="/artists"
+              element={
+                <PrivateRoute>
+                  <ArtistsListPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/artists/new"
+              element={
+                <PrivateRoute>
+                  <ArtistFormPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/artists/:id"
+              element={
+                <PrivateRoute>
+                  <ArtistDetailPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/artists/:id/edit"
+              element={
+                <PrivateRoute>
+                  <ArtistFormPage />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/albums"
+              element={
+                <PrivateRoute>
+                  <AlbumsListPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/albums/new"
+              element={
+                <PrivateRoute>
+                  <AlbumFormPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/albums/:id"
+              element={
+                <PrivateRoute>
+                  <AlbumDetailPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/albums/:id/edit"
+              element={
+                <PrivateRoute>
+                  <AlbumFormPage />
+                </PrivateRoute>
+              }
+            />
 
             {/* 404 */}
             <Route path="*" element={<Navigate to="/" replace />} />

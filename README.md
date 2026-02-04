@@ -1,16 +1,41 @@
-# 🎵 Sistema de Gerenciamento de Artistas e Álbuns
+#  Sistema de Gerenciamento de Artistas e Álbuns - Album repo
 
-## 📋 Dados do Candidato
+## Dados do Candidato
 
 - **Nome**: Gabriel Acassio Correia
-- **Vaga**: Desenvolvedor Full Stack Sênior - Java + Angular/React
+-**Vaga**: ANALISTA DE TI - PERFIL PROFISSIONAL/ESPECIALIDADE - Engenheiro da Computação - Sênio
+- **Projeto**: Full Stack Sênior - Java + Angular/React (Anexo II - c)
 - **Data**: Janeiro/2026
 
 ---
 
-## 🎯 Sobre o Projeto
+##  Sobre o Projeto
 
 Sistema full stack para gerenciamento de artistas musicais e seus álbuns.
+
+---
+
+##  Como Executar
+
+### Pré-requisitos
+- Docker 20.10+
+- Docker Compose 2.0+
+
+### Executar
+```bash
+sudo docker-compose up --build
+```
+
+### Acessar
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8085/swagger-ui.html
+- MinIO: http://localhost:9001
+
+### Credenciais
+- **App**: admin / admin123
+- **MinIO**: minioadmin / minioadmin
+
+---
 
 ### Stack Tecnológico
 
@@ -33,28 +58,7 @@ Sistema full stack para gerenciamento de artistas musicais e seus álbuns.
 
 ---
 
-## 🚀 Como Executar
-
-### Pré-requisitos
-- Docker 20.10+
-- Docker Compose 2.0+
-
-### Executar
-```bash
-sudo docker-compose up --build
-```
-
-### Acessar
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8080/swagger-ui.html
-- MinIO: http://localhost:9001
-
-### Credenciais
-- **App**: admin / admin123
-- **MinIO**: minioadmin / minioadmin
-
----
-# 🏗️ Arquitetura do Sistema
+# Arquitetura do Sistema
 
 ### Visão Geral
 
@@ -79,7 +83,7 @@ sudo docker-compose up --build
 
 ---
 
-##  🪪 Arquitetura da Autenticação 
+##   Arquitetura da Autenticação 
 
 ```
 ┌─────────────┐
@@ -171,7 +175,7 @@ sudo docker-compose up --build
 
 ---
 
-## 📊 Estrutura Detalhada das Tabelas
+##  Estrutura Detalhada das Tabelas
 
 ### 1. Tabela `users`
 
@@ -223,7 +227,7 @@ sudo docker-compose up --build
 
 ---
 
-### 4. Tabela `artist_album` (Junction Table) 🆕
+### 4. Tabela `artist_album` (Junction Table)
 
 | Coluna | Tipo | Constraints | Descrição |
 |--------|------|------------|-----------|
@@ -268,7 +272,7 @@ INSERT INTO artist_album VALUES (5, 4);  -- Artista convidado X
 
 ---
 
-## 🎯 Decisões de Modelagem
+##  Decisões de Modelagem
 
 ### 1. **Tabela USER**
 - **Propósito:** Autenticação JWT
@@ -339,7 +343,7 @@ INSERT INTO artist_album VALUES (5, 4);  -- Artista convidado X
 
 ---
 
-## 🔍 Queries Úteis
+## Queries Úteis
 
 ### Buscar álbuns de um artista:
 ```sql
@@ -377,7 +381,7 @@ ORDER BY num_albums DESC;
 
 ---
 
-## 📝 Migrations Aplicadas
+## Migrations Aplicadas
 
 | Versão | Arquivo | Descrição |
 |--------|---------|-----------|
@@ -385,13 +389,12 @@ ORDER BY num_albums DESC;
 | V2 | `create_artist_table.sql` | Tabela de artistas |
 | V3 | `create_album_table.sql` | Tabela de álbuns (com `artist_id`) |
 | V4 | `create_regional_table.sql` | Tabela de regionais |
-| V5 | `insert_default_user.sql` | Usuário padrão (admin/admin123) |
+| V5 | `create_album_artist_table.sql` |Junction table|
 | V6 | `insert_sample_data.sql` | Dados de exemplo |
-| **V7** | `change_album_artist_to_many_to_many.sql` | **N:N entre Album-Artist** 🆕 |
 
 ---
 
-## 🎨 Mapeamento JPA (Java)
+## Mapeamento JPA (Java)
 
 ### Artist.java
 ```java
@@ -431,7 +434,106 @@ public class Album {
     private Set<Artist> artists = new HashSet<>();
 }
 ```
+## Arquitetura do Frontend
 
+### Padrão Facade
+Centraliza as operações e simplifica a interface para os componentes:
+- **AuthFacade**: Gerencia autenticação
+- **ArtistFacade**: Operações com artistas
+- **AlbumFacade**: Operações com álbuns
+
+### Gerenciamento de Estado (BehaviorSubject)
+Utiliza RxJS BehaviorSubject para estado reativo:
+- **AuthStore**: Estado do usuário autenticado
+- **ArtistStore**: Lista e artista selecionado
+- **AlbumStore**: Lista e álbum selecionado
+
+### HttpClient
+Cliente HTTP centralizado com:
+- Interceptor para adicionar token JWT automaticamente
+- Renovação automática de token expirado
+- Tratamento de erros e rate limiting
+- Suporte a upload de arquivos
+
+##  Autenticação
+
+### Fluxo de Autenticação
+1. Login retorna `accessToken` (5 min) e `refreshToken`
+2. Tokens salvos no `localStorage`
+3. Interceptor adiciona token em todas as requisições
+4. Token renovado automaticamente quando próximo de expirar
+5. Logout ao falhar renovação
+
+### AuthService
+```typescript
+// Login
+await authService.login({ username, password });
+
+// Logout
+authService.logout();
+
+// Verificar autenticação
+const isAuth = authService.isAuthenticated();
+
+// Obter usuário atual
+const user = authService.getCurrentUser();
+```
+
+## Services e Facades
+
+### Uso dos Facades
+```typescript
+import { artistFacade, albumFacade, authFacade } from 'services/facades';
+
+// Login
+await authFacade.login({ username: 'admin', password: 'admin123' });
+
+// Listar artistas
+await artistFacade.list({ page: 0, size: 10, name: 'Beatles' });
+
+// Criar artista
+await artistFacade.create({ name: 'Pink Floyd', bio: '...' });
+
+// Upload de capas
+await albumFacade.uploadCovers(albumId, files);
+```
+
+### Observando o Estado
+```typescript
+import { artistStore } from 'stores';
+
+// Inscrever-se no estado
+const subscription = artistStore.state$.subscribe(state => {
+  console.log('Artists:', state.artists);
+  console.log('Loading:', state.loading);
+  console.log('Error:', state.error);
+});
+
+// Cancelar inscrição
+subscription.unsubscribe();
+```
+
+## Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```env
+REACT_APP_API_BASE_URL=http://localhost:8080/api/v1
+REACT_APP_WS_URL=ws://localhost:8080/ws
+REACT_APP_ENV=development
+```
+
+### Response Interceptor
+- Trata erros 401 renovando o token
+- Trata erro 429 (rate limit)
+- Desloga usuário se renovação falhar
+
+##  Convenções de Código
+
+- **Nomenclatura**: camelCase para variáveis/funções, PascalCase para componentes/classes
+- **Tipagem**: Sempre usar TypeScript com tipos explícitos
+- **Imports**: Usar imports absolutos configurados no `tsconfig.json`
+- **Comentários**: JSDoc para funções e classes públicas
 ---
 
 ## ✅ Status do Projeto
@@ -510,12 +612,12 @@ public class Album {
 - [x] Adicionar validações (Bean Validation)  
 
 **Documentação**
-- [ ] Documentar endpoints no Swagger/OpenAPI  
-- [ ] Adicionar exemplos de request/response  
+- [x] Documentar endpoints no Swagger/OpenAPI  
+- [x] Adicionar exemplos de request/response  
 
 ---
 
-### Sprint 4 - CRUD de Álbuns e Upload de Imagens 
+### Sprint 4 - CRUD de Álbuns e Upload de Imagens  ✅
 
 **Entidades e Repositórios**
 - [x] Criar entidade Album (relacionamento ManyToMany com Artist)
@@ -538,7 +640,7 @@ public class Album {
 
 ---
 
-### Sprint 5 - WebSocket e Notificações 
+### Sprint 5 - WebSocket e Notificações   ✅
 
 **Configuração WebSocket**
 - [x] Adicionar dependência spring-boot-starter-websocket
@@ -553,7 +655,7 @@ public class Album {
 
 ---
 
-### Sprint 6 - Sincronização de Regionais (Requisito Sênior) 
+### Sprint 6 - Sincronização de Regionais (Requisito Sênior)  ✅
 
 **Implementação da Sincronização**
 - [x] Criar entidade Regional (id, nome, ativo)
@@ -566,11 +668,11 @@ public class Album {
   - [x] Inserir novos, inativar removidos, inativar e criar novos para alterados
 - [x] Criar endpoint GET /api/v1/regionais/sync para trigger manual
 - [x] Implementar scheduled job (opcional: sync automático)
-- [ ] Documentar complexidade algorítmica no README
+- [x] Documentar complexidade algorítmica no README
 
 ---
 
-### Sprint 7 - Health Checks e Testes Backend 
+### Sprint 7 - Health Checks e Testes Backend  
 
 **Health Checks**
 - [x] Implementar endpoint /actuator/health
@@ -582,13 +684,13 @@ public class Album {
 - [ ] Testes unitários para ArtistService
 - [ ] Testes unitários para AlbumService
 - [ ] Testes unitários para AuthService
-- [ ]Testes unitários para RegionalSyncService
+- [ ] Testes unitários para RegionalSyncService
 - [ ] Testes de controllers (MockMvc)
 - [ ] Cobertura mínima de 70%
 
 ---
 
-### Sprint 8 - Frontend Base (React/Angular) 
+### Sprint 8 - Frontend Base (React/Angular)  ✅
 
 **Setup Frontend**
 - [x] Inicializar projeto (Create React App + TypeScript ou Angular CLI)
@@ -620,7 +722,7 @@ public class Album {
 
 ---
 
-### Sprint 10 - Listagem de Artistas 
+### Sprint 10 - Listagem de Artistas  ✅
 
 **Componentes**
 - [x] Criar página de listagem de artistas
@@ -637,7 +739,7 @@ public class Album {
 
 ---
 
-### Sprint 11 - Detalhamento e Cadastro 
+### Sprint 11 - Detalhamento e Cadastro  ✅
 
 **Tela de Detalhamento**
 - [x] Criar página de detalhes do artista
@@ -656,7 +758,7 @@ public class Album {
 
 ---
 
-### Sprint 12 - WebSocket Frontend e Notificações 
+### Sprint 12 - WebSocket Frontend e Notificações  ✅
 
 **Integração WebSocket**
 - [x] Adicionar biblioteca WebSocket (SockJS, Stomp)

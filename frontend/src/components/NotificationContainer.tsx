@@ -24,7 +24,7 @@ const NotificationContainer: React.FC = () => {
       setNotifications(prev => [...prev, notificationWithId]);
 
       // Toca som (opcional)
-      playNotificationSound();
+      playNotificationSound( );
     });
 
     // Cleanup
@@ -40,8 +40,8 @@ const NotificationContainer: React.FC = () => {
 
   const playNotificationSound = () => {
     // Som de notificação 
-    // const audio = new Audio('/notification.mp3');
-    // audio.play().catch(e => console.log('Não foi possível tocar som'));
+     const audio = new Audio('/notification_message-notification-21-270139.mp3');
+    audio.play().catch(e => console.log('Não foi possível tocar som'));
   };
 
   return (
