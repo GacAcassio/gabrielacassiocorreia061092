@@ -3,7 +3,7 @@ services:
   postgres:
     image: postgres:15-bullseye
     container_name: artists-postgres
-    restart: unless-stopped
+    restart: on-failure
     networks:
       - artists-network
     environment:
@@ -24,7 +24,7 @@ services:
   minio:
     image: minio/minio:latest
     container_name: artists-minio
-    restart: unless-stopped
+    restart: on-failure
     networks:
       - artists-network
     command: server /data --console-address ":9001"
@@ -69,7 +69,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: artists-backend
-    restart: unless-stopped
+    restart: on-failure
     networks:
       - artists-network
     depends_on:
@@ -114,7 +114,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: artists-frontend
-    restart: unless-stopped
+    restart: on-failure
     networks:
       - artists-network
     depends_on:
