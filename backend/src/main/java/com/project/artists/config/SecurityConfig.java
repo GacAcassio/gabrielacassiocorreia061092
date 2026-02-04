@@ -51,14 +51,41 @@ public class SecurityConfig {
 
             // Configura endpoints públicos e privados
             .authorizeHttpRequests(auth -> auth
+                // Autenticacao
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                
+                // Arquivos
                 .requestMatchers("/api/v1/files/**").permitAll()
+                
+                // WebSocket
+                .requestMatchers("/ws/**").permitAll()
+                
+                // Actuator
+                .requestMatchers("/actuator/**").permitAll()
+                
+                // Swagger/OpenAPI - TODOS OS ENDPOINTS
                 .requestMatchers(
-                    "/api/v1/auth/**",
-                    "/actuator/**",
                     "/swagger-ui/**",
+                    "/swagger-ui.html",
                     "/v3/api-docs/**",
-                    "/ws/**"
+                    "/v3/api-docs.yaml",
+                    "/swagger-resources/**",
+                    "/webjars/**",
+                    "/configuration/**",
+                    "/api-docs/**",
+                    "/swagger-ui-custom.html"
                 ).permitAll()
+                
+                // Recursos estaticos
+                .requestMatchers(
+                    "/",
+                    "/index.html",
+                    "/favicon.ico",
+                    "/static/**",
+                    "/public/**"
+                ).permitAll()
+                
+                // Tudo mais requer autenticacao
                 .anyRequest().authenticated()
             )
 

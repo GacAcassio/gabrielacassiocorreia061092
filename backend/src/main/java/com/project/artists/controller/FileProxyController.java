@@ -26,7 +26,7 @@ public class FileProxyController {
     @GetMapping("/**")
     public ResponseEntity<byte[]> getFile(HttpServletRequest request) {
         try {
-            // Extract object name from URL
+            
             String objectName = request.getRequestURI().replace("/api/v1/files/", "");
             
             InputStream stream = minioClient.getObject(
@@ -40,8 +40,7 @@ public class FileProxyController {
             stream.close();
             
             HttpHeaders headers = new HttpHeaders();
-            
-            // Determine content type based on file extension
+
             if (objectName.endsWith(".jpg") || objectName.endsWith(".jpeg")) {
                 headers.setContentType(MediaType.IMAGE_JPEG);
             } else if (objectName.endsWith(".png")) {

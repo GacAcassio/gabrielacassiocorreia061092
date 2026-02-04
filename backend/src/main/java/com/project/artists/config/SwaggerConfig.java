@@ -67,6 +67,24 @@ public class SwaggerConfig {
             .contact(apiContact())
             .license(apiLicense());
     }
+    
+    /**
+     * Informacoes de contato
+     */
+    private Contact apiContact() {
+        return new Contact()
+            .name("Equipe de Desenvolvimento")
+            .email("acassiocorreia02@gmail.com")
+            .url("https://github.com/GacAcassio");
+    }
+    
+    /**
+     * Informacoes de licenca
+     */
+    private License apiLicense() {
+        return new License()
+            .name("Nenhuma Licenca (Propriedade da Equipe de Desenvolvimento)")
+            .url("https://github.com/GacAcassio");
     }
     
     /**
@@ -76,15 +94,7 @@ public class SwaggerConfig {
         return List.of(
             new Server()
                 .url("http://localhost:" + serverPort)
-                .description("Servidor de Desenvolvimento (Local)"),
-            
-            new Server()
-                .url("http://localhost:8080")
-                .description("Servidor Alternativo (Porta 8080)"),
-            
-            new Server()
-                .url("https://api.artists.com")
-                .description("Servidor de Producao (HTTPS)")
+                .description("Servidor de Desenvolvimento (Local)")
         );
     }
     
