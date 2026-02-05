@@ -82,11 +82,11 @@ class WebSocketService {
       reconnectDelay: 0,
 
       // debug: (str) => {
-      //   // console.log('🔍 STOMP:', str);
-        
+      //   // console.log(' STOMP:', str);
+      
       //   // Log apenas mensagens importantes
       //   if (str.includes('ERROR') || str.includes('CONNECT') || str.includes('CONNECTED')) {
-      //     console.log('🔍 STOMP:', str);
+      //     console.log(' STOMP:', str);
       //   }
       // },
     });
@@ -107,44 +107,44 @@ class WebSocketService {
    */
   private subscribe(): void {
     if (!this.client) {
-      console.error('❌ Cliente WebSocket não inicializado');
+      //console.error('Cliente WebSocket não inicializado');
       return;
     }
 
     if (!this.client.connected) {
-      console.error('❌ Cliente WebSocket não está conectado');
+      //console.error(' Cliente WebSocket não está conectado');
       return;
     }
 
-    console.log('📡 Inscrevendo-se em /topic/notifications');
+    //console.log(' Inscrevendo-se em /topic/notifications');
 
     try {
       this.subscription = this.client.subscribe('/topic/notifications', (message) => {
         try {
-          console.log('📬 Mensagem bruta recebida:', message.body);
+          //console.log('Mensagem bruta recebida:', message.body);
           
           const notification: Notification = JSON.parse(message.body);
-          console.log('🔔 Notificação processada:', notification);
+          //console.log('Notificação processada:', notification);
           
           // Notifica todos os listeners
           this.listeners.forEach(listener => {
             try {
               listener(notification);
             } catch (error) {
-              console.error('❌ Erro ao chamar listener:', error);
+              console.error(' Erro ao chamar listener:', error);
             }
           });
         } catch (error) {
-          console.error('❌ Erro ao processar notificação:', error);
-          console.error('📬 Mensagem recebida:', message.body);
-          console.error('📬 Headers:', message.headers);
+          //console.error('Erro ao processar notificação:', error);
+          //console.error('Mensagem recebida:', message.body);
+          //console.error('Headers:', message.headers);
         }
       });
 
-      console.log('✅ Inscrição em /topic/notifications realizada com sucesso');
-      console.log('📋 Subscription ID:', this.subscription.id);
+      //console.log('Inscrição em /topic/notifications realizada com sucesso');
+      //console.log('Subscription ID:', this.subscription.id);
     } catch (error) {
-      console.error('❌ Erro ao se inscrever no tópico:', error);
+      //console.error('Erro ao se inscrever no tópico:', error);
     }
   }
 
@@ -152,7 +152,7 @@ class WebSocketService {
    * Desconecta do WebSocket
    */
   disconnect(): void {
-    console.log('🔌 Desconectando WebSocket...');
+    //console.log(' Desconectando WebSocket...');
 
     // Cancela tentativas de reconexão
     this.reconnectAttempts = this.maxReconnectAttempts;
@@ -160,9 +160,9 @@ class WebSocketService {
     if (this.subscription) {
       try {
         this.subscription.unsubscribe();
-        console.log('✅ Desinscrito de /topic/notifications');
+        //console.log('Desinscrito de /topic/notifications');
       } catch (error) {
-        console.error('❌ Erro ao desinscrever:', error);
+        //console.error(' Erro ao desinscrever:', error);
       }
       this.subscription = null;
     }
@@ -170,9 +170,9 @@ class WebSocketService {
     if (this.client) {
       try {
         this.client.deactivate();
-        console.log('✅ Cliente WebSocket desativado');
+        //console.log(' Cliente WebSocket desativado');
       } catch (error) {
-        console.error('❌ Erro ao desativar cliente:', error);
+        //console.error(' Erro ao desativar cliente:', error);
       }
       this.client = null;
     }
@@ -188,12 +188,12 @@ class WebSocketService {
    */
   addListener(callback: (notification: Notification) => void): () => void {
     this.listeners.push(callback);
-    console.log(`📝 Listener adicionado. Total: ${this.listeners.length}`);
+    //console.log(`Listener adicionado. Total: ${this.listeners.length}`);
     
     // Retorna função para remover o listener
     return () => {
       this.listeners = this.listeners.filter(l => l !== callback);
-      console.log(`📝 Listener removido. Total: ${this.listeners.length}`);
+      //console.log(`Listener removido. Total: ${this.listeners.length}`);
     };
   }
 
@@ -202,7 +202,7 @@ class WebSocketService {
    */
   clearListeners(): void {
     this.listeners = [];
-    console.log('🗑️ Todos os listeners foram removidos');
+   // console.log('Todos os listeners foram removidos');
   }
 
   /**
@@ -210,12 +210,12 @@ class WebSocketService {
    */
   private handleReconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error(`❌ Máximo de tentativas de reconexão atingido (${this.maxReconnectAttempts})`);
+      //console.error(` Máximo de tentativas de reconexão atingido (${this.maxReconnectAttempts})`);
       return;
     }
 
     this.reconnectAttempts++;
-    console.log(`🔄 Tentando reconectar... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+    //console.log(`Tentando reconectar... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
 
     // Limpa cliente anterior
     if (this.client) {
@@ -250,10 +250,10 @@ class WebSocketService {
   }
 
   /**
-   * 🆕 Força reconexão
+   *  Força reconexão
    */
   forceReconnect(): void {
-    console.log('🔄 Forçando reconexão...');
+    //console.log('Forçando reconexão...');
     this.disconnect();
     this.reconnectAttempts = 0;
     setTimeout(() => {
@@ -266,16 +266,16 @@ class WebSocketService {
    */
   async testConnection(): Promise<boolean> {
     if (!this.isConnected()) {
-      console.error('❌ Não conectado - não é possível testar');
+      //console.error(' Não conectado - não é possível testar');
       return false;
     }
 
     try {
       // Envia um ping ao servidor (se suportado)
-      console.log('🏓 Testando conexão...');
+      //console.log(' Testando conexão...');
       return true;
     } catch (error) {
-      console.error('❌ Erro ao testar conexão:', error);
+      //console.error(' Erro ao testar conexão:', error);
       return false;
     }
   }
