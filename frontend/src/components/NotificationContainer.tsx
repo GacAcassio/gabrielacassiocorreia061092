@@ -39,7 +39,7 @@ const NotificationContainer: React.FC = () => {
 
   const playNotificationSound = () => {
     // Som de notificação 
-     const audio = new Audio('/notification_message-notification-21-270139.mp3');
+     const audio = new Audio('/notificationsound.mp3');
     audio.play().catch(e => console.log('Não foi possível tocar som'));
   };
 

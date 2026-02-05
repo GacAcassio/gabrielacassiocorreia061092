@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/v1/artists")
-@Tag(name = "Artistas", description = "2. Gerenciamento de artistas e bandas musicais")
+@Tag(name = "2. Artistas", description = "Gerenciamento de artistas e bandas musicais")
 public class ArtistController {
     
     @Autowired

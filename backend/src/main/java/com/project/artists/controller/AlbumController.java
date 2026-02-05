@@ -26,7 +26,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1/albums")
-@Tag(name = "Álbuns", description = "3. Gerenciamento de álbuns musicais")
+@Tag(name = "3. Álbuns", description = "Gerenciamento de álbuns musicais")
 public class AlbumController {
     
     @Autowired

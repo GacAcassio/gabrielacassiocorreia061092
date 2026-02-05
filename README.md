@@ -4,16 +4,16 @@
 
 - **Nome**: Gabriel Acassio Correia
 - **Insc**: 16574
--**Vaga**: ANALISTA DE TI - PERFIL PROFISSIONAL/ESPECIALIDADE - Engenheiro da Computação - Sênior
+- **Vaga**: ANALISTA DE TI - PERFIL PROFISSIONAL/ESPECIALIDADE - Engenheiro da Computação - Sênior
 - **Projeto**: Full Stack Sênior - Java + Angular/React (Anexo II - c)
 - **Data**: Janeiro/2026
 
 ---
 
 > Nota à comissão de avaliação:
-> 1. O ratelimiting de 10 requisições por minuto é um valor severo e pode prejudicar a usabilidade da interface gráfica. Portanto é necessário atentar-se para que muitas requisições não sejam feitas. Ao utilizar aa interface web e notar erros, retorne às páginas principais (Artistas ou albuns) e aguarde.
+> 1. O ratelimiting de 10 requisições por minuto é um valor severo e pode prejudicar a usabilidade da interface gráfica, portanto é necessário atentar-se para que muitas requisições não sejam feitas. Ao utilizar a interface web e notar erros, retorne às páginas principais (artistas ou albuns) e aguarde.
 > 2. Para adicionar um álbum a um artista é necessário utilizar os formulários de álbum. Embora sejam entidades independentes, semânticamente a entidade artista existe sem um álbum, todavia para um álbum é condição neccessária a existência de um artista.
-> 3. O álbum RR, presente nos dados de inicialização, possui dois artistas para exemplificar o  que foi requisitado. É possível visualizá-lo na interface web. O álbum Motomami,presente nos dados de inicialização, possui duas capas para exemplificar o  que foi requisitado. É possível visualizá-lo na interface web.
+> 3. O álbum RR, presente nos dados d3e inicialização, possui dois artistas para exemplificar o  que foi requisitado. É possível visualizá-lo na interface web. O álbum Carrie & Lowell,presente nos dados de inicialização, possui duas capas para exemplificar o  que foi requisitado. É possível visualizá-lo na interface web.
 > 4. Este projeto foi desenvolvido em 13 sprints, seguindo os princípios da metodologia extreme programming, que podem ser consultadas no final deste documento.
 > 5. Todos os requisitos previstos em edital foram atendidos.
 
@@ -141,6 +141,8 @@ BUILD SUCCESS
 ```bash
 ./mvnw test -Dtest=AlbumServiceTest
 ```
+```
+
 
 #### Um método específico
 ```bash
@@ -163,12 +165,6 @@ BUILD SUCCESS
 ```bash
 ./mvnw test -Dtest=AlbumServiceTest -X
 ```
-
-#### Sem recompilar
-```bash
-./mvnw surefire:test -Dtest=AlbumServiceTest
-```
-
 ##  Relatórios de Teste
 
 ### **Gerar relatório HTML**

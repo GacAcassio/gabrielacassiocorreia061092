@@ -103,6 +103,8 @@ public class DataInitializer implements CommandLineRunner {
 
             albumService.uploadCovers(18L, List.of(loadAsMultipart("seed-covers/carrie_and_lowell.jpg", "carrie_and_lowell.jpg")));
 
+            albumService.uploadCovers(18L, List.of(loadAsMultipart("seed-covers/carrie_and_lowell2.jpg", "carrie_and_lowell2.jpg")));
+
             albumService.uploadCovers(19L, List.of(loadAsMultipart("seed-covers/monomania.jpeg", "monomania.jpeg")));
 
             albumService.uploadCovers(20L, List.of(loadAsMultipart("seed-covers/problema_meu.jpeg", "problema_meu.jpeg")));
