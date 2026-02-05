@@ -31,17 +31,10 @@ const LoginPage: React.FC = () => {
     setError('');
     setLoading(true);
 
-    console.log('=== LOGIN DEBUG ===');
-    console.log('API URL:', config.api.baseURL);
-    console.log('Username:', username);
-    console.log('Attempting login...');
-
     try {
       await authFacade.login({ username, password });
-      console.log('Login successful!');
       navigate('/artists');
     } catch (err: any) {
-      console.error('Login error:', err);
       setError(err.message || 'Erro ao fazer login. Verifique suas credenciais.');
     } finally {
       setLoading(false);

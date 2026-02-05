@@ -3,16 +3,19 @@
 ## Dados do Candidato
 
 - **Nome**: Gabriel Acassio Correia
--**Vaga**: ANALISTA DE TI - PERFIL PROFISSIONAL/ESPECIALIDADE - Engenheiro da Computação - Sênio
+- **Insc**: 16574
+-**Vaga**: ANALISTA DE TI - PERFIL PROFISSIONAL/ESPECIALIDADE - Engenheiro da Computação - Sênior
 - **Projeto**: Full Stack Sênior - Java + Angular/React (Anexo II - c)
 - **Data**: Janeiro/2026
 
 ---
 
 > Nota à comissão de avaliação:
-> 1. O ratelimiting de 10 requisições por minuto é um valor severo e pode prejudicar a usabilidade da interface gráfica. Portanto é necessário atentar-se para que muitas reuisições não sejam feitas. Ao utilizar aa interface web e notar erros, retorne às páginas principais (Artistas ou albuns) e aguarde o tempo necessário.
+> 1. O ratelimiting de 10 requisições por minuto é um valor severo e pode prejudicar a usabilidade da interface gráfica. Portanto é necessário atentar-se para que muitas requisições não sejam feitas. Ao utilizar aa interface web e notar erros, retorne às páginas principais (Artistas ou albuns) e aguarde.
 > 2. Para adicionar um álbum a um artista é necessário utilizar os formulários de álbum. Embora sejam entidades independentes, semânticamente a entidade artista existe sem um álbum, todavia para um álbum é condição neccessária a existência de um artista.
-> 3. Todos os requisitos previstos em edital foram atendidos.
+> 3. O álbum RR, presente nos dados de inicialização, possui dois artistas para exemplificar o  que foi requisitado. É possível visualizá-lo na interface web. O álbum Motomami,presente nos dados de inicialização, possui duas capas para exemplificar o  que foi requisitado. É possível visualizá-lo na interface web.
+> 4. Este projeto foi desenvolvido em 13 sprints, seguindo os princípios da metodologia extreme programming, que podem ser consultadas no final deste documento.
+> 5. Todos os requisitos previstos em edital foram atendidos.
 
 ##  Sobre o Projeto
 
@@ -28,13 +31,15 @@ Sistema full stack para gerenciamento de artistas musicais e seus álbuns.
 
 ### Executar
 
-1. Certirfique-se de que nenhum outro serviço, volume, imagem ou rede está em conflito come ste projeto. Caso seja necessário, execute o comando abaixo para removê-los:
+1. Certirfique-se de que nenhum outro serviço, volume, imagem ou rede está em conflito com este projeto. Caso seja necessário, execute o comando abaixo para removê-los:
+
 ```bash
 sudo docker compose down -v
 sudo docker system prune -a --volumes --force
 ```
 
-2. Este projeto utiliza as portas locais 3000, 8085, 9002 e 9003. Certifique-se de que elas estjam disponíveis.
+2. Este projeto utiliza as portas locais 3000, 8085, 9002 e 9003. Certifique-se de que elas estejam disponíveis.
+
 ```bash
 sudo lsof -i :PORT
 ```
@@ -811,7 +816,7 @@ subscription.unsubscribe();
 
 ---
 
-### Sprint 7 - Health Checks e Testes Backend  
+### Sprint 7 - Health Checks e Testes Backend   ✅
 
 **Health Checks**
 - [x] Implementar endpoint /actuator/health
@@ -844,7 +849,7 @@ subscription.unsubscribe();
 - [x] Implementar renovação automática de token
 - [x] Criar interceptor para adicionar token 
 
-### Sprint 9 - Telas de Autenticação 
+### Sprint 9 - Telas de Autenticação  ✅
 
 **Login**
 - [x] Criar componente de Login
@@ -913,17 +918,7 @@ subscription.unsubscribe();
 
 ---
 
-### Sprint 13 - Testes Frontend 
-
-**Testes Unitários**
-- [ ] Testes de componentes (Jest + Testing Library ou Jasmine/Karma)
-- [ ] Testes de services
-- [ ] Testes de guards e interceptors
-- [ ] Cobertura mínima de 60%
-
----
-
-### Sprint 14 - Documentação e Finalização 
+### Sprint 13 - Documentação e Finalização  ✅
 
 **README.md Completo**
 - [x] Dados de inscrição e vaga
@@ -939,7 +934,7 @@ subscription.unsubscribe();
 - [x] O que foi implementado
 - [x] O que não foi implementado (se houver) e por quê
 
-**Refinamentos Finais**
+**Refinamentos Finais**  ✅
 - [x] Revisar código (Clean Code)
 - [ ] Remover código comentado e console.logs
 - [x] Verificar todos os requisitos atendidos
@@ -948,7 +943,7 @@ subscription.unsubscribe();
 - [x] Testar fluxo completo end-to-end
 - [x] Revisar histórico de commits (mensagens claras e commits pequenos)
 
-**Checklist Final**
+**Checklist Final**  ✅
 - [x] Docker-compose funcional (BD + MinIO + API + Frontend)
 - [x] Autenticação JWT (5 min + renovação)
 - [x] CORS configurado
