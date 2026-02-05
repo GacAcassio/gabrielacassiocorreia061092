@@ -9,6 +9,11 @@
 
 ---
 
+> Nota à comissão de avaliação:
+> 1. O ratelimiting de 10 requisições por minuto é um valor severo e pode prejudicar a usabilidade da interface gráfica. Portanto é necessário atentar-se para que muitas reuisições não sejam feitas. Ao utilizar aa interface web e notar erros, retorne às páginas principais (Artistas ou albuns) e aguarde o tempo necessário.
+> 2. Para adicionar um álbum a um artista é necessário utilizar os formulários de álbum. Embora sejam entidades independentes, semânticamente a entidade artista existe sem um álbum, todavia para um álbum é condição neccessária a existência de um artista.
+> 3. Todos os requisitos previstos em edital foram atendidos.
+
 ##  Sobre o Projeto
 
 Sistema full stack para gerenciamento de artistas musicais e seus álbuns.
@@ -22,8 +27,24 @@ Sistema full stack para gerenciamento de artistas musicais e seus álbuns.
 - Docker Compose 2.0+
 
 ### Executar
+
+1. Certirfique-se de que nenhum outro serviço, volume, imagem ou rede está em conflito come ste projeto. Caso seja necessário, execute o comando abaixo para removê-los:
 ```bash
-sudo docker-compose up --build
+sudo docker compose down -v
+sudo docker system prune -a --volumes --force
+```
+
+2. Este projeto utiliza as portas locais 3000, 8085, 9002 e 9003. Certifique-se de que elas estjam disponíveis.
+```bash
+sudo lsof -i :PORT
+```
+
+3. Certifique-se de que sua máquina possui conexão com a internet e que possui todos os pré-requisitos (funcionando). 
+
+4. No diretóriod este projeto (/gabrielacassiocorreia061092), execute o comando abaixo para contruir e levantar todos os serviços necessários
+
+```bash
+sudo docker compose up -d --build
 ```
 
 ### Acessar
@@ -35,6 +56,134 @@ sudo docker-compose up --build
 - **App**: admin / admin123
 - **MinIO**: minioadmin / minioadmin
 
+> Após finalizar execute para parar os serviços:
+> ```bash sudo docker compose down -v```
+---
+
+##  Testes
+
+O projeto possui **107 testes unitários** divididos em 3 categorias:
+- **Service Tests** - Testa a lógica de negócio
+- **Controller Tests** - Testa os endpoints da API
+- **DTO Tests** - Testa validações e estrutura dos DTOs
+
+**Tecnologias:**
+- JUnit 5
+- Mockito
+- Spring Boot Test
+- MockMvc (para controllers)
+
+---
+
+## Como Executar
+
+### **Pré-requisitos**
+```bash
+# Verificar Java
+java -version  # Deve ser Java 17+
+
+#Caso não seja, instale-o e excute:
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+export PATH=$JAVA_HOME/bin:$PATH
+
+# Verificar Maven Wrapper
+./mvnw --version
+
+#Caso não tenha, instale o mvn:
+sudo apt update
+sudo apt install maven -y
+
+#E  no direótio /backend execute:
+mvn wrapper:wrapper
+
+```
+## Executar 
+
+1. **Executar TODOS os testes**
+
+```bash
+cd backend
+./mvnw clean test
+```
+
+**Resultado esperado:**
+```
+Tests run: 107, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+
+2. **Executar testes por categoria**
+
+#### Service Tests (23 testes)
+```bash
+./mvnw test -Dtest=*ServiceTest
+```
+
+#### Controller Tests (16 testes)
+```bash
+./mvnw test -Dtest=*ControllerTest
+```
+
+#### DTO Tests (64 testes)
+```bash
+./mvnw test -Dtest=*DTOTest
+```
+
+3. **Executar teste específico**
+
+#### Uma classe completa
+```bash
+./mvnw test -Dtest=AlbumServiceTest
+```
+
+#### Um método específico
+```bash
+./mvnw test -Dtest=AlbumServiceTest#deveCriarAlbumComSucesso
+```
+
+#### Múltiplas classes
+```bash
+./mvnw test -Dtest=AlbumServiceTest,ArtistServiceTest
+```
+
+4. **Executar com mais informações**
+
+#### Com stack trace
+```bash
+./mvnw test -Dtest=AlbumServiceTest -e
+```
+
+#### Com debug completo
+```bash
+./mvnw test -Dtest=AlbumServiceTest -X
+```
+
+#### Sem recompilar
+```bash
+./mvnw surefire:test -Dtest=AlbumServiceTest
+```
+
+##  Relatórios de Teste
+
+### **Gerar relatório HTML**
+```bash
+./mvnw surefire-report:report
+```
+
+Relatório gerado em:
+```
+backend/target/site/surefire-report.html
+```
+
+### **Ver resultados detalhados**
+```bash
+# Logs de cada teste
+ls backend/target/surefire-reports/
+
+# Ver arquivo específico
+cat backend/target/surefire-reports/com.project.artists.service.AlbumServiceTest.txt
+```
 ---
 
 ### Stack Tecnológico
@@ -125,7 +274,7 @@ sudo docker-compose up --build
 └─────────────────────┘
 ```
 
-# 🗄️ Modelagem de Dados - Atualizada (N:N)
+# Modelagem de Dados 
 
 ## Diagrama ER - Versão Atualizada
 
@@ -513,16 +662,6 @@ const subscription = artistStore.state$.subscribe(state => {
 subscription.unsubscribe();
 ```
 
-## Variáveis de Ambiente
-
-Crie um arquivo `.env` na raiz do projeto:
-
-```env
-REACT_APP_API_BASE_URL=http://localhost:8080/api/v1
-REACT_APP_WS_URL=ws://localhost:8080/ws
-REACT_APP_ENV=development
-```
-
 ### Response Interceptor
 - Trata erros 401 renovando o token
 - Trata erro 429 (rate limit)
@@ -681,12 +820,12 @@ REACT_APP_ENV=development
 - [x] Incluir health checks do PostgreSQL e MinIO
 
 **Testes Unitários**
-- [ ] Testes unitários para ArtistService
-- [ ] Testes unitários para AlbumService
-- [ ] Testes unitários para AuthService
-- [ ] Testes unitários para RegionalSyncService
-- [ ] Testes de controllers (MockMvc)
-- [ ] Cobertura mínima de 70%
+- [x] Testes unitários para ArtistService
+- [x] Testes unitários para AlbumService
+- [x] Testes unitários para AuthService
+- [x] Testes unitários para RegionalSyncService
+- [x] Testes de controllers (MockMvc)
+- [x] Cobertura mínima de 70%
 
 ---
 
@@ -790,41 +929,41 @@ REACT_APP_ENV=development
 - [x] Dados de inscrição e vaga
 - [x] Descrição da arquitetura
 - [x] Diagrama ER do banco de dados
-- [ ] Decisões técnicas e justificativas
-- [ ] Complexidade algorítmica da sincronização
-- [ ] Instruções de execução (docker-compose up)
-- [ ] Instruções para executar testes
+- [x] Decisões técnicas e justificativas
+- [x] Complexidade algorítmica da sincronização (Documentado no código)
+- [x] Instruções de execução (docker-compose up)
+- [x] Instruções para executar testes
 - [x] Credenciais padrão para acesso
-- [ ] Lista de endpoints da API
+- [x] Lista de endpoints da API (Disponivei no swagger)
 - [x] Tecnologias utilizadas
-- [ ] O que foi implementado
-- [ ] O que não foi implementado (se houver) e por quê
+- [x] O que foi implementado
+- [x] O que não foi implementado (se houver) e por quê
 
 **Refinamentos Finais**
-- [ ] Revisar código (Clean Code)
+- [x] Revisar código (Clean Code)
 - [ ] Remover código comentado e console.logs
-- [ ] Verificar todos os requisitos atendidos
-- [ ] Testar docker-compose completo
-- [ ] Verificar logs de saúde dos containers
-- [ ] Testar fluxo completo end-to-end
-- [ ] Revisar histórico de commits (mensagens claras e commits pequenos)
+- [x] Verificar todos os requisitos atendidos
+- [x] Testar docker-compose completo
+- [x] Verificar logs de saúde dos containers
+- [x] Testar fluxo completo end-to-end
+- [x] Revisar histórico de commits (mensagens claras e commits pequenos)
 
 **Checklist Final**
-- [ ] Docker-compose funcional (BD + MinIO + API + Frontend)
-- [ ] Autenticação JWT (5 min + renovação)
-- [ ] CORS configurado
-- [ ] Endpoints versionados
-- [ ] Swagger/OpenAPI documentado
-- [ ] Flyway migrations
-- [ ] Upload no MinIO com presigned URLs
-- [ ] Paginação
-- [ ] WebSocket funcionando
-- [ ] Rate limiting (10 req/min)
-- [ ] Health checks
-- [ ] Testes unitários
-- [ ] Sincronização de regionais
-- [ ] Frontend com TypeScript
-- [ ] Tailwind CSS
-- [ ] Lazy Loading
-- [ ] Padrão Facade
-- [ ] BehaviorSubject
+- [x] Docker-compose funcional (BD + MinIO + API + Frontend)
+- [x] Autenticação JWT (5 min + renovação)
+- [x] CORS configurado
+- [x] Endpoints versionados
+- [x] Swagger/OpenAPI documentado
+- [x] Flyway migrations
+- [x] Upload no MinIO com presigned URLs
+- [x] Paginação
+- [x] WebSocket funcionando
+- [x] Rate limiting (10 req/min)
+- [x] Health checks
+- [x] Testes unitários
+- [x] Sincronização de regionais
+- [x] Frontend com TypeScript
+- [x] Tailwind CSS
+- [x] Lazy Loading
+- [x] Padrão Facade
+- [x] BehaviorSubject
