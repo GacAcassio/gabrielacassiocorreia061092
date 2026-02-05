@@ -45,7 +45,7 @@ const AlbumFormPage: React.FC = () => {
     try {
       await artistFacade.list({ page: 0, size: 1000 });
     } catch (err) {
-      console.error('Error loading artists:', err);
+      //console.error('Error loading artists:', err);
     }
   };
 

@@ -165,7 +165,7 @@ public class AlbumServiceImpl implements AlbumService {
             try {
                 minioService.deleteFile(objectName);
             } catch (Exception e) {
-                System.err.println("Erro ao deletar capa: " + objectName);
+                //System.err.println("Erro ao deletar capa: " + objectName);
             }
         }
 

@@ -56,7 +56,6 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onC
     }
 
     if (route) {
-      console.log('📍 Navegando para:', route);
       navigate(route);
       handleClose();
     }

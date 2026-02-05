@@ -11,7 +11,6 @@ const NotificationContainer: React.FC = () => {
 
   useEffect(() => {
     // Conecta ao WebSocket
-    console.log('🔔 Inicializando sistema de notificações');
     webSocketService.connect();
 
     // Adiciona listener para novas notificações

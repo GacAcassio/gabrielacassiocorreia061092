@@ -84,13 +84,13 @@ public class JwtTokenProvider {
             return true;
 
         } catch (ExpiredJwtException e) {
-            System.out.println("JWT EXPIRADO: " + e.getMessage());
+           // System.out.println("JWT EXPIRADO: " + e.getMessage());
         } catch (SecurityException e) {
-            System.out.println("ASSINATURA INVÁLIDA (secret mudou?): " + e.getMessage());
+            //System.out.println("ASSINATURA INVÁLIDA (secret mudou?): " + e.getMessage());
         } catch (MalformedJwtException e) {
-            System.out.println("JWT MALFORMADO (token truncado): " + e.getMessage());
+            //System.out.println("JWT MALFORMADO (token truncado): " + e.getMessage());
         } catch (JwtException | IllegalArgumentException e) {
-            System.out.println("JWT INVÁLIDO: " + e.getMessage());
+           // System.out.println("JWT INVÁLIDO: " + e.getMessage());
         }
         return false;
     }
