@@ -50,8 +50,8 @@ INSERT INTO albums (title, release_year) VALUES
     ('Spanish Leather', 2022),
     ('Revolver', 1966),
     ('Abbey Road', 1969),
-    ('Fetch the Bolt Cutters', 2020);
-
+    ('Fetch the Bolt Cutters', 2020)
+ON CONFLICT DO NOTHING;
 
 INSERT INTO artist_album (artist_id, album_id) Values
     (1, 1),
@@ -84,5 +84,5 @@ INSERT INTO artist_album (artist_id, album_id) Values
     (15, 27),
     (16, 28),
     (16, 29),
-    (17, 30);
-
+    (17, 30)
+ON CONFLICT DO NOTHING;
