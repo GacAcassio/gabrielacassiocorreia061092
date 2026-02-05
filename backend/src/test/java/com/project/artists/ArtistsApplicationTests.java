@@ -29,7 +29,7 @@ class ArtistsApplicationTest {
 
     @Test
     void mainMethodDoesNotThrowException() {
-        String[] args = {}
+        String[] args = {};
         assertThat(ArtistsApplication.class).isNotNull();
         assertThat(ArtistsApplication.class.getAnnotation(SpringBootApplication.class)).isNotNull();
     }
