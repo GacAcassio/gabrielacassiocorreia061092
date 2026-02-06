@@ -22,6 +22,11 @@
 
 Sistema full stack para gerenciamento de artistas musicais e seus álbuns.
 
+###  Faça um clone deste projeto
+
+```bash
+ git clone https://github.com/GacAcassio/gabrielacassiocorreia061092.git
+```
 ---
 
 ##  Como Executar
