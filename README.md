@@ -7,13 +7,14 @@
 - **Vaga**: ANALISTA DE TI - PERFIL PROFISSIONAL/ESPECIALIDADE - Engenheiro da Computação - Sênior
 - **Projeto**: Full Stack Sênior - Java + Angular/React (Anexo II - c)
 - **Data**: Janeiro/2026
+- **Contato**: Acassiocorreia03@gmail.com
 
 ---
 
 > Nota à comissão de avaliação:
 > 1. O ratelimiting de 10 requisições por minuto é um valor severo e pode prejudicar a usabilidade da interface gráfica, portanto é necessário atentar-se para que muitas requisições não sejam feitas. Ao utilizar a interface web e notar erros, retorne às páginas principais (artistas ou albuns) e aguarde.
 > 2. Para adicionar um álbum a um artista é necessário utilizar os formulários de álbum. Embora sejam entidades independentes, semânticamente a entidade artista existe sem um álbum, todavia para um álbum é condição neccessária a existência de um artista.
-> 3. O álbum RR, presente nos dados d3e inicialização, possui dois artistas para exemplificar o  que foi requisitado. É possível visualizá-lo na interface web. O álbum Carrie & Lowell,presente nos dados de inicialização, possui duas capas para exemplificar o  que foi requisitado. É possível visualizá-lo na interface web.
+> 3. O álbum RR, presente nos dados de inicialização, possui dois artistas para exemplificar o  que foi requisitado. É possível visualizá-lo na interface web. O álbum Carrie & Lowell,presente nos dados de inicialização, possui duas capas para exemplificar o  que foi requisitado. Também é possível visualizá-lo na interface web.
 > 4. Este projeto foi desenvolvido em 13 sprints, seguindo os princípios da metodologia extreme programming, que podem ser consultadas no final deste documento.
 > 5. Todos os requisitos previstos em edital foram atendidos.
 
@@ -210,25 +211,62 @@ cat backend/target/surefire-reports/com.project.artists.service.AlbumServiceTest
 
 # Arquitetura do Sistema
 
-### Visão Geral
+### Diagrama de Arquitetura:
 
 ```
-┌─────────────────┐         ┌──────────────────┐
-│                 │         │                  │
-│   Frontend      │◄───────►│   Backend API    │
-│ (React/Angular) │  HTTPS  │  (Spring Boot)   │
-│                 │ WebSocket│                  │
-└─────────────────┘         └──────────────────┘
-                                    │
-                    ┌───────────────┼───────────────┐
-                    │               │               │
-                    ▼               ▼               ▼
-            ┌──────────────┐ ┌──────────┐ ┌────────────────┐
-            │              │ │          │ │                │
-            │  PostgreSQL  │ │  MinIO   │ │  External API  │
-            │   Database   │ │  (S3)    │ │  (Regionais)   │
-            │              │ │          │ │                │
-            └──────────────┘ └──────────┘ └────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                     FRONTEND                            │
+│              (React / Angular / Vue)                    │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     │ HTTP/REST + WebSocket
+                     │
+┌────────────────────▼────────────────────────────────────┐
+│                  ARTISTS API                            │
+│                 (Spring Boot)                           │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │           CONTROLLERS                           │   │
+│  │  - AuthController                               │   │
+│  │  - ArtistController                             │   │
+│  │  - AlbumController                              │   │
+│  │  - RegionalController (Sprint 6)                │   │
+│  └────────────┬────────────────────────────────────┘   │
+│               │                                         │
+│  ┌────────────▼────────────────────────────────────┐   │
+│  │            SERVICES                             │   │
+│  │  - AuthService                                  │   │
+│  │  - ArtistService                                │   │
+│  │  - AlbumService                                 │   │
+│  │  - RegionalSyncService                          │   │
+│  │  - MinioService (Storage)                       │   │
+│  │  - NotificationService (WebSocket)              │   │
+│  │  - RateLimitService                             │   │
+│  └────────────┬────────────────────────────────────┘   │
+│               │                                         │
+│  ┌────────────▼────────────────────────────────────┐   │
+│  │         REPOSITORIES                            │   │
+│  │  - UserRepository                               │   │
+│  │  - ArtistRepository                             │   │
+│  │  - AlbumRepository                              │   │
+│  │  - RegionalRepository                           │   │
+│  └────────────┬────────────────────────────────────┘   │
+│               │                                         │
+│  ┌────────────▼────────────────────────────────────┐   │
+│  │           SECURITY                              │   │
+│  │  - JwtAuthenticationFilter                      │   │
+│  │  - RateLimitFilter                              │   │
+│  │  - JwtTokenProvider                             │   │
+│  │  - SecurityConfig                               │   │
+│  └─────────────────────────────────────────────────┘   │
+└────┬────────────────────────────────┬─────────────┬────┘
+     │                                │             │
+     │                                │             │
+┌────▼────────┐             ┌─────────▼──────┐  ┌──▼─────────┐
+│ PostgreSQL  │             │     MinIO      │  │ External   │
+│  Database   │             │  (S3 Storage)  │  │ Regional   │
+│             │             │                │  │    API     │
+└─────────────┘             └────────────────┘  └────────────┘
 ```
 
 ---
@@ -274,6 +312,23 @@ cat backend/target/surefire-reports/com.project.artists.service.AlbumServiceTest
 │ ArtistController    │ Processa requisição
 └─────────────────────┘
 ```
+### Padrões Arquiteturais:
+
+1. **Layered Architecture** (Camadas)
+   - Controller → Service → Repository → Entity
+   
+2. **Dependency Injection** (Spring IoC)
+   - `@Autowired`, `@Service`, `@Repository`
+   
+3. **DTO Pattern**
+   - Request DTOs (validação)
+   - Response DTOs (exposição controlada)
+   
+4. **Repository Pattern**
+   - Spring Data JPA
+   
+5. **Filter Chain** (Segurança)
+   - JWT Filter → Rate Limit Filter
 
 # Modelagem de Dados 
 
@@ -584,6 +639,351 @@ public class Album {
     private Set<Artist> artists = new HashSet<>();
 }
 ```
+
+---
+## Módulos e Funcionalidades
+
+### 1. Autenticação (Auth)
+
+**Arquivos:**
+- `AuthController.java`
+- `AuthService.java` / `AuthServiceImpl.java`
+- `JwtTokenProvider.java`
+- `JwtAuthenticationFilter.java`
+
+**Funcionalidades:**
+- ✅ Login com username/password
+- ✅ Geração de JWT (access + refresh token)
+- ✅ Renovação de token (refresh)
+- ✅ Validação de token em cada requisição
+- ✅ Hash de senhas com BCrypt
+
+**Endpoints:**
+```
+POST /api/v1/auth/login       - Fazer login
+POST /api/v1/auth/refresh     - Renovar token
+GET  /api/v1/auth/test        - Testar API
+```
+
+**Fluxo:**
+```
+1. Cliente envia username + password
+2. AuthService valida credenciais
+3. JwtTokenProvider gera tokens
+4. Retorna accessToken (5min) + refreshToken (7 dias)
+5. Cliente usa accessToken em Authorization: Bearer <token>
+6. JwtAuthenticationFilter valida token em cada request
+```
+
+---
+
+### 2. Artistas (Artists)
+
+**Arquivos:**
+- `ArtistController.java`
+- `ArtistService.java` / `ArtistServiceImpl.java`
+- `ArtistRepository.java`
+- `Artist.java` (entity)
+
+**Funcionalidades:**
+- ✅ CRUD completo de artistas
+- ✅ Busca por nome (case insensitive)
+- ✅ Paginação e ordenação
+- ✅ Relacionamento com álbuns (OneToMany)
+
+**Endpoints:**
+```
+POST   /api/v1/artists              - Criar artista
+GET    /api/v1/artists              - Listar (paginado)
+GET    /api/v1/artists/{id}         - Buscar por ID
+GET    /api/v1/artists/search       - Buscar por nome
+PUT    /api/v1/artists/{id}         - Atualizar
+DELETE /api/v1/artists/{id}         - Deletar
+```
+
+**Modelo:**
+```java
+Artist {
+  id: Long
+  name: String (unique, indexed)
+  genre: String
+  country: String
+  foundedYear: Integer
+  biography: String (text)
+  albums: List<Album>
+  createdAt: LocalDateTime
+  updatedAt: LocalDateTime
+}
+```
+
+---
+
+### 3. Álbuns (Albums)
+
+**Arquivos:**
+- `AlbumController.java`
+- `AlbumService.java` / `AlbumServiceImpl.java`
+- `AlbumRepository.java`
+- `Album.java` (entity)
+- `MinioService.java` (storage)
+
+**Funcionalidades:**
+- ✅ CRUD completo de álbuns
+- ✅ Upload múltiplo de capas (MinIO/S3)
+- ✅ Relacionamento ManyToOne com artistas
+- ✅ Remoção de capas específicas
+- ✅ Paginação e ordenação
+
+**Endpoints:**
+```
+POST   /api/v1/albums                    - Criar álbum
+GET    /api/v1/albums                    - Listar (paginado)
+GET    /api/v1/albums/{id}               - Buscar por ID
+GET    /api/v1/albums/artist/{artistId}  - Álbuns de um artista
+PUT    /api/v1/albums/{id}               - Atualizar
+DELETE /api/v1/albums/{id}               - Deletar
+POST   /api/v1/albums/{id}/covers        - Upload capas
+DELETE /api/v1/albums/{id}/covers        - Remover capa
+```
+
+**Modelo:**
+```java
+Album {
+  id: Long
+  title: String
+  releaseYear: Integer
+  genre: String
+  trackCount: Integer
+  artist: Artist (ManyToOne)
+  coverUrls: List<String> (JSON)
+  createdAt: LocalDateTime
+  updatedAt: LocalDateTime
+}
+```
+
+---
+
+### 4. Regionais
+
+**Arquivos:**
+- `RegionalController.java`
+- `RegionalSyncService.java` / `RegionalSyncServiceImpl.java`
+- `RegionalRepository.java`
+- `Regional.java` (entity)
+- `RegionalApiClient.java`
+- `RegionalSyncScheduler.java`
+
+**Funcionalidades:**
+- ✅ Sincronização com API externa
+- ✅ Detecção de: novos, removidos, alterados
+- ✅ Algoritmo O(n+m) otimizado
+- ✅ Job agendado (CRON configurável)
+- ✅ Estatísticas detalhadas
+- ✅ Retry automático com backoff
+
+**Endpoints:**
+```
+POST /api/v1/regionais/sync   - Sincronizar (manual)
+GET  /api/v1/regionais        - Listar ativos
+GET  /api/v1/regionais/all    - Listar todos
+```
+
+**Modelo:**
+```java
+Regional {
+  id: Long
+  nome: String (unique, indexed)
+  ativo: Boolean
+  createdAt: LocalDateTime
+  updatedAt: LocalDateTime
+}
+```
+
+**Algoritmo de Sincronização:**
+```
+Complexidade: O(n + m)
+- n = regionais API externa
+- m = regionais banco local
+
+1. Fetch API externa → List<RegionalExternoDTO>
+2. Fetch banco local → List<Regional> (ativos)
+3. Criar HashMap local (nome → Regional) → O(m)
+4. Para cada regional externo → O(n)
+   - Se não existe → INSERT (novo)
+   - Se existe e nome mudou → UPDATE (alterado)
+   - Remover do HashMap
+5. Regionais restantes no HashMap → UPDATE ativo=false (removidos)
+6. Retornar estatísticas
+```
+
+**Job Agendado:**
+```yaml
+app:
+  regional-sync:
+    enabled: true
+    cron: "0 0 2 * * ?"  # 2h da manhã diariamente
+```
+
+---
+
+### 5. Upload de Arquivos (MinIO)
+
+**Arquivos:**
+- `MinioService.java` / `MinioServiceImpl.java`
+- `MinioConfig.java`
+
+**Funcionalidades:**
+- ✅ Upload de múltiplas imagens
+- ✅ Geração de URLs pré-assinadas
+- ✅ Remoção de arquivos
+- ✅ Validação de tipo (jpg, png, webp)
+- ✅ Armazenamento S3-compatible
+
+**Configuração:**
+```yaml
+minio:
+  url: http://minio:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket-name: artists-covers
+```
+
+**Fluxo:**
+```
+1. Cliente envia multipart/form-data
+2. AlbumService valida arquivos
+3. MinioService faz upload para MinIO
+4. Retorna URL pública
+5. Salva URLs no banco (Album.coverUrls)
+```
+
+---
+
+### 6. WebSocket (Notificações)
+
+**Arquivos:**
+- `NotificationService.java` / `NotificationServiceImpl.java`
+- `WebSocketConfig.java`
+- `NotificationDTO.java`
+
+**Funcionalidades:**
+- ✅ Notificações em tempo real
+- ✅ Broadcast para todos os clientes
+- ✅ Tipos: INFO, SUCCESS, WARNING, ERROR
+
+**Endpoint:**
+```
+WS /ws
+Topic: /topic/notifications
+```
+
+**Uso:**
+```javascript
+// Frontend conecta
+const socket = new SockJS('http://localhost:8085/ws');
+const stompClient = Stomp.over(socket);
+
+stompClient.connect({}, () => {
+  stompClient.subscribe('/topic/notifications', (message) => {
+    const notification = JSON.parse(message.body);
+    console.log(notification);
+  });
+});
+```
+
+**Eventos enviados:**
+- Artista criado/atualizado/deletado
+- Álbum criado/atualizado/deletado
+- Sincronização de regionais concluída
+
+---
+
+### 7. Segurança
+
+**Componentes:**
+
+1. **JWT Authentication**
+   - `JwtTokenProvider` - Gera e valida tokens
+   - `JwtAuthenticationFilter` - Valida token em cada request
+   - `JwtAuthenticationEntryPoint` - Handler de erros 401
+
+2. **Rate Limiting**
+   - `RateLimitService` - Controla taxa de requisições
+   - `RateLimitFilter` - Aplica limites
+   - Configurável por IP e endpoint
+
+3. **Password Security**
+   - BCrypt para hash de senhas
+   - Validação de força (opcional)
+
+4. **CORS**
+   - `CorsConfig` - Configuração de origens permitidas
+   - Headers permitidos
+   - Métodos permitidos
+
+**Configuração de Segurança:**
+```java
+// Endpoints públicos
+/api/v1/auth/**
+/swagger-ui/**
+/v3/api-docs/**
+/ws/**
+/actuator/**
+
+// Endpoints protegidos (requerem JWT)
+/api/v1/artists/**
+/api/v1/albums/**
+/api/v1/regionais/**
+```
+
+---
+
+### 8. Paginação
+
+**Implementação:**
+- Spring Data Pageable
+- Parâmetros: `page`, `size`, `sortBy`, `direction`
+
+**Exemplo:**
+```
+GET /api/v1/artists?page=0&size=10&sortBy=name&direction=asc
+```
+
+**Resposta:**
+```json
+{
+  "content": [...],
+  "page": 0,
+  "size": 10,
+  "totalElements": 50,
+  "totalPages": 5,
+  "first": true,
+  "last": false
+}
+```
+---
+
+## Endpoints da API
+
+### **Resumo:**
+
+| Grupo | Endpoints | Autenticação |
+|-------|-----------|--------------|
+| **Auth** | 3 | Não |
+| **Artists** | 6 | Sim |
+| **Albums** | 8 | Sim |
+| **Regionais** | 3 | Sim |
+| **TOTAL** | **20** | - |
+
+### **Detalhamento:**
+
+Ver documentação completa em:
+```
+http://localhost:8085/swagger-ui.html
+```
+
+---
+
 ## Arquitetura do Frontend
 
 ### Padrão Facade
